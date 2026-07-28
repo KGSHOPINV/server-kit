@@ -29,14 +29,15 @@ show_menu() {
   echo "    2)  Scan ports"
   echo "    3)  Add new project"
   echo "    4)  Health check"
-  echo "    5)  View logs (Dozzle)"
-  echo "    6)  Container management (Portainer)"
-  echo "    7)  System stats (Netdata)"
-  echo "    8)  Backup now"
-  echo "    9)  Linux cheat sheet"
-  echo "   10)  Open Claude CLI"
-  echo "   11)  Docker shortcuts"
-  echo "   12)  Hardware monitor (temps, disks, power)"
+  echo "    5)  Security check"
+  echo "    6)  Hardware monitor (temps, disks, power)"
+  echo "    7)  View logs (Dozzle)"
+  echo "    8)  Container management (Portainer)"
+  echo "    9)  System stats (Netdata)"
+  echo "   10)  Backup now"
+  echo "   11)  Linux cheat sheet"
+  echo "   12)  Docker shortcuts"
+  echo "   13)  Open Claude CLI"
   echo "    0)  Exit"
   echo ""
   echo "  =================================================="
@@ -84,45 +85,49 @@ while true; do
       read -p "  Press Enter to continue..."
       ;;
     5)
+      security-check
+      read -p "  Press Enter to continue..."
+      ;;
+    6)
+      hw-monitor
+      read -p "  Press Enter to continue..."
+      ;;
+    7)
       echo ""
       echo "  Opening Dozzle in browser..."
       echo "  URL: http://$IP:8080"
       xdg-open "http://$IP:8080" 2>/dev/null || echo "  Open http://$IP:8080 in your browser."
       read -p "  Press Enter to continue..."
       ;;
-    6)
+    8)
       echo ""
       echo "  Opening Portainer..."
       echo "  URL: https://$IP:9443"
       xdg-open "https://$IP:9443" 2>/dev/null || echo "  Open https://$IP:9443 in your browser."
       read -p "  Press Enter to continue..."
       ;;
-    7)
+    9)
       echo ""
       echo "  Opening Netdata..."
       echo "  URL: http://$IP:19999"
       xdg-open "http://$IP:19999" 2>/dev/null || echo "  Open http://$IP:19999 in your browser."
       read -p "  Press Enter to continue..."
       ;;
-    8)
+    10)
       echo ""
       server-backup
       read -p "  Press Enter to continue..."
       ;;
-    9)
+    11)
       cheatsheet
       ;;
-    10)
+    12)
+      docker_shortcuts
+      ;;
+    13)
       echo ""
       echo "  Launching Claude CLI..."
       claude
-      ;;
-    11)
-      docker_shortcuts
-      ;;
-    12)
-      hw-monitor
-      read -p "  Press Enter to continue..."
       ;;
     0)
       echo ""
