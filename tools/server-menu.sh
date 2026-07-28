@@ -36,6 +36,7 @@ show_menu() {
   echo "    9)  Linux cheat sheet"
   echo "   10)  Open Claude CLI"
   echo "   11)  Docker shortcuts"
+  echo "   12)  Hardware monitor (temps, disks, power)"
   echo "    0)  Exit"
   echo ""
   echo "  =================================================="
@@ -118,6 +119,10 @@ while true; do
       ;;
     11)
       docker_shortcuts
+      ;;
+    12)
+      hw-monitor
+      read -p "  Press Enter to continue..."
       ;;
     0)
       echo ""
