@@ -1,0 +1,21 @@
+services:
+  wikijs:
+    image: ghcr.io/requarks/wiki:2
+    container_name: wikijs
+    restart: always
+    ports:
+      - "3003:3000"
+    environment:
+      DB_TYPE: sqlite
+      DB_FILEPATH: /data/wiki.sqlite
+    volumes:
+      - wiki-data:/data
+    networks:
+      - proxy
+
+volumes:
+  wiki-data:
+
+networks:
+  proxy:
+    external: true

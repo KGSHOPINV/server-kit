@@ -1,0 +1,16 @@
+services:
+  languagetool:
+    image: erikvl87/languagetool:latest
+    container_name: languagetool
+    restart: always
+    ports:
+      - "8084:8010"
+    environment:
+      - Java_Xms=256m
+      - Java_Xmx=512m
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

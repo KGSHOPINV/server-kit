@@ -13,42 +13,65 @@ echo ""
 IP=$(hostname -I | awk '{print $1}')
 PASS=0
 FAIL=0
-SKIP=0
 
 check_service() {
   local name="$1"
   local port="$2"
-  local protocol="${3:-http}"
 
   if ss -tlnp | grep -q ":${port} " 2>/dev/null; then
     container=$(docker ps --format '{{.Names}}' --filter "publish=${port}" 2>/dev/null | head -1)
-    container=${container:-"(non-docker)"}
-    printf "  %-22s %-8s %-20s %s\n" "$name" ":$port" "$container" "[OK]"
+    container=${container:-"(system)"}
+    printf "  %-24s %-8s %-22s %s\n" "$name" ":$port" "$container" "[OK]"
     ((PASS++))
   else
-    printf "  %-22s %-8s %-20s %s\n" "$name" ":$port" "—" "[DOWN]"
+    printf "  %-24s %-8s %-22s %s\n" "$name" ":$port" "—" "[DOWN]"
     ((FAIL++))
   fi
 }
 
-printf "  %-22s %-8s %-20s %s\n" "SERVICE" "PORT" "CONTAINER" "STATUS"
-echo "  ────────────────────────────────────────────────────────────"
+printf "  %-24s %-8s %-22s %s\n" "SERVICE" "PORT" "CONTAINER" "STATUS"
+echo "  ──────────────────────────────────────────────────────────────"
 
+echo ""
+echo "  --- SYSTEM ---"
 check_service "SSH" 22
+
+echo ""
+echo "  --- INFRASTRUCTURE ---"
 check_service "HTTP (NPM)" 80
 check_service "HTTPS (NPM)" 443
 check_service "NPM Admin" 81
-check_service "Homepage" 3000
-check_service "Uptime Kuma" 3001
-check_service "Supabase Studio" 8000
-check_service "n8n" 5678
-check_service "Dozzle" 8080
-check_service "SurrealDB" 8181
 check_service "Portainer" 9443
-check_service "Netdata" 19999
 
 echo ""
-echo "  ────────────────────────────────────────────────────────────"
+echo "  --- MONITORING ---"
+check_service "Homepage" 3000
+check_service "Uptime Kuma" 3001
+check_service "Grafana" 3002
+check_service "Netdata" 19999
+check_service "Dozzle" 8080
+
+echo ""
+echo "  --- DATABASES & STORAGE ---"
+check_service "PostgreSQL" 5432
+check_service "Supabase Studio" 8000
+check_service "SurrealDB" 8181
+check_service "Redis" 6379
+check_service "Redis Commander" 8082
+check_service "MinIO API" 9000
+check_service "MinIO Console" 9001
+check_service "Adminer" 8083
+
+echo ""
+echo "  --- DEV TOOLS ---"
+check_service "n8n" 5678
+check_service "Mailpit Web" 8025
+check_service "Mailpit SMTP" 1025
+check_service "Wiki.js" 3003
+check_service "LanguageTool" 8084
+
+echo ""
+echo "  ──────────────────────────────────────────────────────────────"
 echo "  Results: $PASS OK  |  $FAIL DOWN"
 echo ""
 
