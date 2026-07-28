@@ -1,0 +1,3 @@
+*.iso
+.env
+node_modules/
