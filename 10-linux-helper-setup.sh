@@ -20,6 +20,9 @@ sudo cp "$SCRIPT_DIR/tools/add-project.sh" /usr/local/bin/add-project
 sudo cp "$SCRIPT_DIR/tools/health-check.sh" /usr/local/bin/health-check
 sudo cp "$SCRIPT_DIR/tools/linux-cheatsheet.sh" /usr/local/bin/cheatsheet
 sudo cp "$SCRIPT_DIR/tools/self-update.sh" /usr/local/bin/kit-update
+sudo cp "$SCRIPT_DIR/tools/server-register.sh" /usr/local/bin/server-register
+sudo cp "$SCRIPT_DIR/tools/server-list.sh" /usr/local/bin/kit-servers
+sudo cp "$SCRIPT_DIR/tools/server-sync.sh" /usr/local/bin/kit-sync
 
 sudo chmod +x /usr/local/bin/server-menu
 sudo chmod +x /usr/local/bin/port-scan
@@ -27,6 +30,9 @@ sudo chmod +x /usr/local/bin/add-project
 sudo chmod +x /usr/local/bin/health-check
 sudo chmod +x /usr/local/bin/cheatsheet
 sudo chmod +x /usr/local/bin/kit-update
+sudo chmod +x /usr/local/bin/server-register
+sudo chmod +x /usr/local/bin/kit-servers
+sudo chmod +x /usr/local/bin/kit-sync
 
 # --- Bash aliases ---
 echo ""

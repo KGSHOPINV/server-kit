@@ -40,6 +40,7 @@ show_menu() {
   echo "   13)  Deploy project from GitHub"
   echo "   14)  Open Claude CLI"
   echo "   15)  Update server-kit"
+  echo "   16)  Server registry (multi-server)"
   echo "    0)  Exit"
   echo ""
   echo "  =================================================="
@@ -136,6 +137,10 @@ while true; do
       ;;
     15)
       kit-update
+      read -p "  Press Enter to continue..."
+      ;;
+    16)
+      kit-servers
       read -p "  Press Enter to continue..."
       ;;
     0)
