@@ -1,0 +1,24 @@
+services:
+  openclaw:
+    image: ghcr.io/psteinerdev/openclaw:latest
+    container_name: openclaw
+    restart: always
+    ports:
+      - "3005:3000"
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+      # For cloud LLMs (optional, pick one):
+      # - OPENAI_API_KEY=your-key
+      # - ANTHROPIC_API_KEY=your-key
+      # - GOOGLE_API_KEY=your-key
+    volumes:
+      - openclaw-data:/app/data
+    networks:
+      - proxy
+
+volumes:
+  openclaw-data:
+
+networks:
+  proxy:
+    external: true

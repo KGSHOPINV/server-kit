@@ -42,6 +42,7 @@ show_menu() {
   echo "   15)  Open Claude CLI"
   echo "   16)  Update server-kit"
   echo "   17)  Server registry (multi-server)"
+  echo "   18)  AI models (manage local AI)"
   echo "    0)  Exit"
   echo ""
   echo "  =================================================="
@@ -146,6 +147,10 @@ while true; do
       ;;
     17)
       kit-servers
+      read -p "  Press Enter to continue..."
+      ;;
+    18)
+      ai-models
       read -p "  Press Enter to continue..."
       ;;
     0)

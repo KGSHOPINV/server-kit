@@ -49,7 +49,7 @@ check_service "Homepage" 3000
 check_service "Uptime Kuma" 3001
 check_service "Grafana" 3002
 check_service "Netdata" 19999
-check_service "Dozzle" 8080
+check_service "Dozzle" 8090
 
 echo ""
 echo "  --- DATABASES & STORAGE ---"
@@ -61,6 +61,12 @@ check_service "Redis Commander" 8082
 check_service "MinIO API" 9000
 check_service "MinIO Console" 9001
 check_service "Adminer" 8083
+
+echo ""
+echo "  --- AI ---"
+check_service "Ollama API" 11434
+check_service "Open WebUI" 3004
+check_service "OpenClaw" 3005
 
 echo ""
 echo "  --- DEV TOOLS ---"
