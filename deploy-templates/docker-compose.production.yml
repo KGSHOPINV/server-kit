@@ -1,0 +1,53 @@
+# ============================================================
+# PRODUCTION COMPOSE TEMPLATE
+# Copy to your project, rename to docker-compose.yml, modify
+# ============================================================
+
+services:
+  app:
+    # Option A: Pull from GitHub Container Registry
+    image: ghcr.io/YOURUSER/YOURREPO:latest
+
+    # Option B: Build from local Dockerfile
+    # build: .
+
+    container_name: PROJECTNAME
+    restart: always
+    ports:
+      - "HOST_PORT:CONTAINER_PORT"
+    environment:
+      - NODE_ENV=production
+      # Add your env vars here
+      # - DATABASE_URL=postgres://user:pass@supabase-db:5432/dbname
+      # - REDIS_URL=redis://redis:6379
+    volumes:
+      - app-data:/data
+    networks:
+      - proxy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:CONTAINER_PORT/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Uncomment if you need a dedicated database
+  # db:
+  #   image: postgres:16
+  #   container_name: PROJECTNAME-db
+  #   restart: always
+  #   environment:
+  #     POSTGRES_DB: PROJECTNAME
+  #     POSTGRES_USER: PROJECTNAME
+  #     POSTGRES_PASSWORD: CHANGE_ME
+  #   volumes:
+  #     - db-data:/var/lib/postgresql/data
+  #   networks:
+  #     - proxy
+
+volumes:
+  app-data:
+  # db-data:
+
+networks:
+  proxy:
+    external: true

@@ -26,6 +26,7 @@ echo "  09 - Backup System"
 echo "  10 - Linux Helper (menu, aliases, tools)"
 echo "  11 - Hardware Monitoring (temps, disk health, sensors)"
 echo "  12 - Security Hardening (fail2ban, CrowdSec, scanning, audit)"
+echo "  13 - GitHub Deploy (GHCR, webhooks, Actions, auto-deploy)"
 echo ""
 read -p "Run full install? (y/n): " confirm
 
@@ -67,6 +68,7 @@ bash "$SCRIPT_DIR/09-backup-setup.sh"
 bash "$SCRIPT_DIR/10-linux-helper-setup.sh"
 bash "$SCRIPT_DIR/11-hardware-monitor-setup.sh"
 bash "$SCRIPT_DIR/12-security-setup.sh"
+bash "$SCRIPT_DIR/13-github-deploy-setup.sh"
 
 echo ""
 echo "========================================================"

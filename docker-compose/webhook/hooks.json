@@ -1,0 +1,33 @@
+[
+  {
+    "id": "deploy",
+    "execute-command": "/scripts/deploy.sh",
+    "command-working-directory": "/srv/docker",
+    "pass-arguments-to-command": [
+      {
+        "source": "payload",
+        "name": "repository.name"
+      },
+      {
+        "source": "payload",
+        "name": "ref"
+      }
+    ],
+    "trigger-rule": {
+      "and": [
+        {
+          "match": {
+            "type": "value",
+            "value": "refs/heads/main",
+            "parameter": {
+              "source": "payload",
+              "name": "ref"
+            }
+          }
+        }
+      ]
+    },
+    "response-message": "Deploy triggered.",
+    "trigger-rule-mismatch-http-response-code": 200
+  }
+]
