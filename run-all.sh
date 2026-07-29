@@ -29,6 +29,7 @@ SCRIPTS=(
   "11-hardware-monitor-setup.sh:Hardware Monitoring"
   "12-security-setup.sh:Security Hardening"
   "13-github-deploy-setup.sh:GitHub Deploy"
+  "14-terminal-setup.sh:Terminal Setup (prompt, dashboard, banner)"
 )
 
 # --- Check for previous progress ---

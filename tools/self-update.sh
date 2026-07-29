@@ -68,6 +68,7 @@ TOOLS=(
   "self-update.sh:kit-update"
   "whats-next.sh:whats-next"
   "howdo.sh:howdo"
+  "essentials.sh:essentials"
   "server-register.sh:server-register"
   "server-list.sh:kit-servers"
   "server-sync.sh:kit-sync"

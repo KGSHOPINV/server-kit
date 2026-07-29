@@ -22,6 +22,7 @@ sudo cp "$SCRIPT_DIR/tools/linux-cheatsheet.sh" /usr/local/bin/cheatsheet
 sudo cp "$SCRIPT_DIR/tools/self-update.sh" /usr/local/bin/kit-update
 sudo cp "$SCRIPT_DIR/tools/whats-next.sh" /usr/local/bin/whats-next
 sudo cp "$SCRIPT_DIR/tools/howdo.sh" /usr/local/bin/howdo
+sudo cp "$SCRIPT_DIR/tools/essentials.sh" /usr/local/bin/essentials
 sudo cp "$SCRIPT_DIR/tools/server-register.sh" /usr/local/bin/server-register
 sudo cp "$SCRIPT_DIR/tools/server-list.sh" /usr/local/bin/kit-servers
 sudo cp "$SCRIPT_DIR/tools/server-sync.sh" /usr/local/bin/kit-sync
@@ -34,6 +35,7 @@ sudo chmod +x /usr/local/bin/cheatsheet
 sudo chmod +x /usr/local/bin/kit-update
 sudo chmod +x /usr/local/bin/whats-next
 sudo chmod +x /usr/local/bin/howdo
+sudo chmod +x /usr/local/bin/essentials
 sudo chmod +x /usr/local/bin/server-register
 sudo chmod +x /usr/local/bin/kit-servers
 sudo chmod +x /usr/local/bin/kit-sync
