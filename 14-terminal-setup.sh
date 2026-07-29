@@ -17,7 +17,8 @@ REAL_HOME=$(eval echo ~$REAL_USER)
 # --- Install terminal tools ---
 echo ""
 echo "Installing terminal tools..."
-sudo apt install -y tmux neofetch figlet
+sudo apt install -y tmux figlet
+sudo apt install -y fastfetch 2>/dev/null || sudo apt install -y neofetch 2>/dev/null || true
 
 # --- Custom bash prompt ---
 echo ""
