@@ -37,7 +37,9 @@ show_menu() {
   echo "   10)  Backup now"
   echo "   11)  Linux cheat sheet"
   echo "   12)  Docker shortcuts"
-  echo "   13)  Open Claude CLI"
+  echo "   13)  Deploy project from GitHub"
+  echo "   14)  Open Claude CLI"
+  echo "   15)  Update server-kit"
   echo "    0)  Exit"
   echo ""
   echo "  =================================================="
@@ -125,9 +127,16 @@ while true; do
       docker_shortcuts
       ;;
     13)
+      deploy-project
+      ;;
+    14)
       echo ""
       echo "  Launching Claude CLI..."
       claude
+      ;;
+    15)
+      kit-update
+      read -p "  Press Enter to continue..."
       ;;
     0)
       echo ""

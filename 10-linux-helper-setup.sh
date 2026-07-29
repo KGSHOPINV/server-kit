@@ -19,12 +19,14 @@ sudo cp "$SCRIPT_DIR/tools/port-scan.sh" /usr/local/bin/port-scan
 sudo cp "$SCRIPT_DIR/tools/add-project.sh" /usr/local/bin/add-project
 sudo cp "$SCRIPT_DIR/tools/health-check.sh" /usr/local/bin/health-check
 sudo cp "$SCRIPT_DIR/tools/linux-cheatsheet.sh" /usr/local/bin/cheatsheet
+sudo cp "$SCRIPT_DIR/tools/self-update.sh" /usr/local/bin/kit-update
 
 sudo chmod +x /usr/local/bin/server-menu
 sudo chmod +x /usr/local/bin/port-scan
 sudo chmod +x /usr/local/bin/add-project
 sudo chmod +x /usr/local/bin/health-check
 sudo chmod +x /usr/local/bin/cheatsheet
+sudo chmod +x /usr/local/bin/kit-update
 
 # --- Bash aliases ---
 echo ""
@@ -41,6 +43,7 @@ alias dcu="docker compose up -d"
 alias dcd="docker compose down"
 alias dcr="docker compose restart"
 alias dcp="docker compose pull && docker compose up -d"
+alias update-kit="kit-update"
 # === END SERVER KIT ==='
 
 if ! grep -q "SERVER KIT ALIASES" ~/.bashrc 2>/dev/null; then
