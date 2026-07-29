@@ -25,22 +25,23 @@ show_menu() {
   echo ""
   echo "  =================================================="
   echo ""
-  echo "    1)  View running services"
-  echo "    2)  Scan ports"
-  echo "    3)  Add new project"
+  echo "    1)  What's next? (what do I need to do)"
+  echo "    2)  View running services"
+  echo "    3)  Scan ports"
   echo "    4)  Health check"
   echo "    5)  Security check"
   echo "    6)  Hardware monitor (temps, disks, power)"
-  echo "    7)  View logs (Dozzle)"
-  echo "    8)  Container management (Portainer)"
-  echo "    9)  System stats (Netdata)"
-  echo "   10)  Backup now"
-  echo "   11)  Linux cheat sheet"
-  echo "   12)  Docker shortcuts"
-  echo "   13)  Deploy project from GitHub"
-  echo "   14)  Open Claude CLI"
-  echo "   15)  Update server-kit"
-  echo "   16)  Server registry (multi-server)"
+  echo "    7)  Add new project"
+  echo "    8)  Deploy project from GitHub"
+  echo "    9)  View logs (Dozzle)"
+  echo "   10)  Container management (Portainer)"
+  echo "   11)  System stats (Netdata)"
+  echo "   12)  Backup now"
+  echo "   13)  Linux cheat sheet"
+  echo "   14)  Docker shortcuts"
+  echo "   15)  Open Claude CLI"
+  echo "   16)  Update server-kit"
+  echo "   17)  Server registry (multi-server)"
   echo "    0)  Exit"
   echo ""
   echo "  =================================================="
@@ -71,17 +72,18 @@ while true; do
 
   case $choice in
     1)
+      whats-next
+      read -p "  Press Enter to continue..."
+      ;;
+    2)
       echo ""
       docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" 2>/dev/null || echo "Docker not running."
       echo ""
       read -p "  Press Enter to continue..."
       ;;
-    2)
+    3)
       port-scan
       read -p "  Press Enter to continue..."
-      ;;
-    3)
-      add-project
       ;;
     4)
       health-check
@@ -96,50 +98,53 @@ while true; do
       read -p "  Press Enter to continue..."
       ;;
     7)
-      echo ""
-      echo "  Opening Dozzle in browser..."
-      echo "  URL: http://$IP:8080"
-      xdg-open "http://$IP:8080" 2>/dev/null || echo "  Open http://$IP:8080 in your browser."
-      read -p "  Press Enter to continue..."
+      add-project
       ;;
     8)
+      deploy-project
+      ;;
+    9)
+      echo ""
+      echo "  Opening Dozzle..."
+      echo "  URL: http://$IP:8090"
+      xdg-open "http://$IP:8090" 2>/dev/null || echo "  Open http://$IP:8090 in your browser."
+      read -p "  Press Enter to continue..."
+      ;;
+    10)
       echo ""
       echo "  Opening Portainer..."
       echo "  URL: https://$IP:9443"
       xdg-open "https://$IP:9443" 2>/dev/null || echo "  Open https://$IP:9443 in your browser."
       read -p "  Press Enter to continue..."
       ;;
-    9)
+    11)
       echo ""
       echo "  Opening Netdata..."
       echo "  URL: http://$IP:19999"
       xdg-open "http://$IP:19999" 2>/dev/null || echo "  Open http://$IP:19999 in your browser."
       read -p "  Press Enter to continue..."
       ;;
-    10)
+    12)
       echo ""
       server-backup
       read -p "  Press Enter to continue..."
       ;;
-    11)
+    13)
       cheatsheet
       ;;
-    12)
+    14)
       docker_shortcuts
       ;;
-    13)
-      deploy-project
-      ;;
-    14)
+    15)
       echo ""
       echo "  Launching Claude CLI..."
       claude
       ;;
-    15)
+    16)
       kit-update
       read -p "  Press Enter to continue..."
       ;;
-    16)
+    17)
       kit-servers
       read -p "  Press Enter to continue..."
       ;;
