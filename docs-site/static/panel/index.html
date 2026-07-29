@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Server Kit — Control Panel</title>
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #161922;
+  --card: #1c1f2b;
+  --border: #2a2d3a;
+  --text: #e1e4ed;
+  --muted: #8b8fa7;
+  --dim: #6b6f85;
+  --accent: #6c8aff;
+  --green: #4ade80;
+  --yellow: #facc15;
+  --red: #f87171;
+  --orange: #fb923c;
+  --purple: #a855f7;
+  --radius: 10px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); }
+
+.app { max-width: 1100px; margin: 0 auto; padding: 24px 20px 80px; }
+
+/* Header */
+.header { text-align: center; padding: 32px 0 24px; }
+.header h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; }
+.header h1 span { color: var(--accent); }
+.header p { color: var(--muted); margin-top: 4px; font-size: 15px; }
+
+/* IP Config */
+.ip-bar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.ip-bar label { color: var(--muted); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
+.ip-bar input {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: var(--text);
+  font-size: 15px;
+  font-family: 'Consolas', monospace;
+  outline: none;
+  max-width: 200px;
+}
+.ip-bar input:focus { border-color: var(--accent); }
+.ip-bar .save-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0;
+  overflow-x: auto;
+}
+.tab {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+  white-space: nowrap;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* Tab content */
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* Service cards */
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.service-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+  display: block;
+}
+.service-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+.service-card .name {
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.service-card .port {
+  font-family: 'Consolas', monospace;
+  font-size: 12px;
+  color: var(--accent);
+  background: rgba(108,138,255,0.12);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.service-card .desc {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 6px;
+  line-height: 1.4;
+}
+.service-card .badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.badge-core { background: rgba(108,138,255,0.15); color: var(--accent); }
+.badge-monitor { background: rgba(74,222,128,0.15); color: var(--green); }
+.badge-db { background: rgba(251,146,60,0.15); color: var(--orange); }
+.badge-dev { background: rgba(250,204,21,0.15); color: var(--yellow); }
+.badge-ai { background: rgba(168,85,247,0.15); color: var(--purple); }
+
+/* Section headers */
+.section-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--dim);
+  margin: 24px 0 12px;
+}
+
+/* Learning path */
+.task-list { list-style: none; }
+.task-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.task-item:hover { border-color: var(--border); }
+.task-item.done { opacity: 0.5; }
+.task-item.done .task-title { text-decoration: line-through; }
+.task-check {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  font-size: 14px;
+}
+.task-item.done .task-check {
+  background: var(--green);
+  border-color: var(--green);
+  color: #000;
+}
+.task-body { flex: 1; }
+.task-title { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+.task-desc { color: var(--muted); font-size: 13px; line-height: 1.4; }
+.task-round {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  margin: 24px 0 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Progress bar */
+.progress-bar {
+  background: var(--surface);
+  border-radius: 20px;
+  height: 8px;
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--green));
+  border-radius: 20px;
+  transition: width 0.3s;
+}
+.progress-text {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+/* Commands */
+.cmd-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 8px;
+}
+.cmd-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.cmd-name {
+  font-family: 'Consolas', monospace;
+  font-size: 14px;
+  color: var(--green);
+  font-weight: 600;
+  min-width: 110px;
+}
+.cmd-desc { color: var(--muted); font-size: 13px; }
+
+/* Info panel */
+.info-panel {
+  position: fixed;
+  top: 0;
+  right: -420px;
+  width: 420px;
+  height: 100vh;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  z-index: 200;
+  transition: right 0.25s ease;
+  overflow-y: auto;
+  padding: 24px;
+}
+.info-panel.open { right: 0; box-shadow: -8px 0 32px rgba(0,0,0,0.4); }
+.info-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 24px;
+  cursor: pointer;
+}
+.info-panel h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+.info-panel .info-port { color: var(--accent); font-family: monospace; font-size: 14px; margin-bottom: 12px; }
+.info-panel .info-section { margin-top: 20px; }
+.info-panel .info-section h3 { font-size: 14px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+.info-panel p { font-size: 14px; line-height: 1.6; color: var(--text); margin-bottom: 8px; }
+.info-panel code { background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; font-size: 13px; color: var(--accent); }
+.info-panel pre { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin: 8px 0; overflow-x: auto; }
+.info-panel pre code { border: none; padding: 0; color: var(--text); display: block; line-height: 1.5; }
+.info-panel .open-btn {
+  display: inline-block;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 12px;
+  text-decoration: none;
+}
+.info-panel .open-btn:hover { opacity: 0.9; }
+
+.overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 199;
+  display: none;
+}
+.overlay.open { display: block; }
+
+@media (max-width: 600px) {
+  .service-grid { grid-template-columns: 1fr; }
+  .cmd-grid { grid-template-columns: 1fr; }
+  .info-panel { width: 100%; right: -100%; }
+  .ip-bar { flex-wrap: wrap; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="header">
+    <h1>Server <span>Kit</span></h1>
+    <p>Your server control panel</p>
+  </div>
+
+  <div class="ip-bar">
+    <label>Server IP</label>
+    <input type="text" id="serverIp" value="192.168.1.229" placeholder="192.168.1.229">
+    <button class="save-btn" onclick="saveIp()">Save</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('services')">Services</button>
+    <button class="tab" onclick="switchTab('learn')">Learning Path</button>
+    <button class="tab" onclick="switchTab('commands')">Commands</button>
+  </div>
+
+  <!-- SERVICES TAB -->
+  <div class="tab-content active" id="tab-services">
+
+    <div class="section-label">Infrastructure</div>
+    <div class="service-grid">
+      <a class="service-card" onclick="openInfo('npm')">
+        <div class="name"><span class="badge badge-core">Core</span> Nginx Proxy Manager</div>
+        <div class="port">:81</div>
+        <div class="desc">Routes traffic to containers by domain name. Change default password first.</div>
+      </a>
+      <a class="service-card" onclick="openInfo('portainer')">
+        <div class="name"><span class="badge badge-core">Core</span> Portainer</div>
+        <div class="port">:9443</div>
+        <div class="desc">Visual Docker management. See all containers, logs, volumes.</div>
+      </a>
+      <a class="service-card" onclick="openInfo('cloudflared')">
+        <div class="name"><span class="badge badge-core">Core</span> Cloudflare Tunnel</div>
+        <div class="port">none</div>
+        <div class="desc">Encrypted tunnel for remote access. No open ports needed.</div>
+      </a>
+    </div>
+
+    <div class="section-label">Monitoring</div>
+    <div class="service-grid">
+      <a class="service-card" onclick="openInfo('homepage')">
+        <div class="name"><span class="badge badge-monitor">Monitor</span> Homepage</div>
+        <div class="port">:3000</div>
+        <div class="desc">Dashboard with clickable tiles for all your services.</div>
+      </a>
+      <a class="service-card" onclick="openInfo('kuma')">
+        <div class="name"><span class="badge badge-monitor">Monitor</span> Uptime Kuma</div>
+        <div class="port">:3001</div>
+        <div class="desc">Monitors if services are alive. Sends alerts when something dies.</div>
+      </a>
+      <a class="service-card" onclick="openInfo('netdata')">
+        <div class="name"><span class="badge badge-monitor">Monitor</span> Netdata</div>
+        <div class="port">:19999</div>
+        <div class="desc">Real-time CPU, RAM, disk, network graphs. Free, no account needed.</div>
+      </a>
+      <a class="service-card" onclick="openInfo('dozzle')">
+        <div class="name"><span class="badge badge-monitor">Monitor</span> Dozzle</div>
+        <div class="port">:8090</div>
+        <div class="desc">Live container log viewer. See all logs in one browser tab.</div>
+      </a>
+      <a class="service-card" onclick="openInfo('cockpit')">
+        <div class="name"><span class="badge badge-monitor">Monitor</span> Cockpit</div>
+        <div class="port">:9090</div>
+        <div class="desc">Web terminal + system management. Login with your Linux password.</div>
+      </a>
+    </div>
+
+    <div class="section-label">Databases & Storage (install when needed)</div>
+    <div class="service-grid">
+      <a class="service-card" onclick="openInfo('supabase')">
+        <div class="name"><span class="badge badge-db">DB</span> Supabase</div>
+        <div class="port">:8000</div>
+        <div class="desc">Postgres + auth + auto API. Full backend in a box.</div>
+      </a>
+      <a class="service-card" onclick="openInfo('surrealdb')">
+        <div class="name"><span class="badge badge-db">DB</span> SurrealDB</div>
+        <div class="port">:8181</div>
+        <div class="desc">Relational + document + graph database in one.</div>
+      </a>
+      <a class="service-card" onclick="openInfo('redis')">
+        <div class="name"><span class="badge badge-db">DB</span> Redis</div>
+        <div class="port">:6379</div>
+        <div class="desc">Ultra-fast cache, sessions, queues.</div>
+      </a>
+      <a class="service-card" onclick="openInfo('minio')">
+        <div class="name"><span class="badge badge-db">DB</span> MinIO</div>
+        <div class="port">:9001</div>
+        <div class="desc">Self-hosted file storage. S3-compatible.</div>
+      </a>
+    </div>
+
+    <div class="section-label">Dev Tools (install when needed)</div>
+    <div class="service-grid">
+      <a class="service-card" onclick="openInfo('n8n')">
+        <div class="name"><span class="badge badge-dev">Dev</span> n8n</div>
+        <div class="port">:5678</div>
+        <div class="desc">Workflow automation. Self-hosted Zapier.</div>
+      </a>
+      <a class="service-card" onclick="openInfo('adminer')">
+        <div class="name"><span class="badge badge-dev">Dev</span> Adminer</div>
+        <div class="port">:8083</div>
+        <div class="desc">Lightweight database browser. Connect to any DB.</div>
+      </a>
+      <a class="service-card" onclick="openInfo('wikijs')">
+        <div class="name"><span class="badge badge-dev">Dev</span> Wiki.js</div>
+        <div class="port">:3003</div>
+        <div class="desc">Self-hosted wiki for documentation.</div>
+      </a>
+    </div>
+
+    <div class="section-label">AI (needs GPU for good speed)</div>
+    <div class="service-grid">
+      <a class="service-card" onclick="openInfo('ollama')">
+        <div class="name"><span class="badge badge-ai">AI</span> Ollama</div>
+        <div class="port">:11434</div>
+        <div class="desc">Runs AI models locally. The engine behind everything.</div>
+      </a>
+      <a class="service-card" onclick="openInfo('openwebui')">
+        <div class="name"><span class="badge badge-ai">AI</span> Open WebUI</div>
+        <div class="port">:3004</div>
+        <div class="desc">ChatGPT-like interface for local AI models.</div>
+      </a>
+      <a class="service-card" onclick="openInfo('openclaw')">
+        <div class="name"><span class="badge badge-ai">AI</span> OpenClaw</div>
+        <div class="port">:3005</div>
+        <div class="desc">Autonomous AI agent. Plans and executes tasks.</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- LEARNING PATH TAB -->
+  <div class="tab-content" id="tab-learn">
+    <div class="progress-text"><span id="progressCount">0</span> of <span id="progressTotal">16</span> completed</div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+
+    <div class="task-round">Round 1 — Know Your Server</div>
+    <ul class="task-list">
+      <li class="task-item" data-task="ssh" onclick="toggleTask(this)">
+        <div class="task-check"></div>
+        <div class="task-body">
+          <div class="task-title">SSH in from your desktop</div>
+          <div class="task-desc">Double-click "Connect to Server.bat" in your DropBox folder</div>
+        </div>
+      </li>
+      <li class="task-item" data-task="health" onclick="toggleTask(this)">
+        <div class="task-check"></div>
+        <div class="task-body">
+          <div class="task-title">Run health check</div>
+          <div class="task-desc">Type <code>health</code> in terminal — see what's green and what's not</div>
+        </div>
+      </li>
+      <li class="task-item" data-task="dps" onclick="toggleTask(this)">
+        <div class="task-check"></div>
+        <div class="task-body">
+          <div class="task-title">See running containers</div>
+          <div class="task-desc">Type <code>dps</code> — shows every Docker container and its status</div>
+        </div>
+      </li>
+      <li class="task-item" data-task="homepage" onclick="toggleTask(this)">
+        <div class="task-check"></div>
+        <div class="task-body">
+          <div class="task-title">Open Homepage dashboard</div>
+          <div class="task-desc">Open :3000 in your browser — visual overview of all services</div>
+        </div>
+      </li>
+    </ul>
+
+    <div class="task-round">Round 2 — Understand Docker</div>
+    <ul class="task-list">
+      <li class="task-item" data-task="logs" onclick="toggleTask(this)">
+        <div class="task-check"></div>
+        <div class="task-body">
+          <div class="task-title">Read container logs</div>
+          <div class="task-desc">Type <code>docker logs npm</code> — see what NPM is doing. Ctrl+C to stop.</div>
+        </div>
+      </li>
+      <li class="task-item" data-task="restart" onclick="toggleTask(this)">
+        <div class="task-check"></div>
+        <div class="task-body">
+          <div class="task-title">Restart a container</div>
+          <div class="task-desc">Type <code>docker restart uptime-kuma</code> — watch it come back on its own</div>
+        </div>
+      </li>
+      <li class="task-item" data-task="folder" onclick="toggleTask(this)">
+        <div class="task-check"></div>
+        <div class="task-body">
+          <div class="task-title">Look inside a project folder</div>
+          <div class="task-desc">Type <code>cd /srv/docker/npm && ls</code> — see what makes up a project</div>
+        </div>
+      </li>
+      <li class="task-item" data-task="portainer" onclick="toggleTask(this)">
+        <div class="task-check"></div>
+        <div class="task-body">
+          <div class="task-title">Explore Portainer</div>
+          <div class="task-desc">Open :9443 — click Containers, click a container, look at logs and details</div>
+        </div>
+      </li>
+    </ul>
+
+    <div class="task-round">Round 3 — Secure & Protect</div>
+    <ul class="task-list">
+      <li class="task-item" data-task="npm-pw" onclick="toggleTask(this)">
+        <div class="task-check"></div>
+        <div class="task-body">
+          <div class="task-title">Change NPM default password</div>
+          <div class="task-desc">Open :81, login admin@example.com / changeme, change it immediately</div>
+        </div>
+      </li>
+      <li class="task-item" data-task="kuma-monitor" onclick="toggleTask(this)">
+        <div class="task-check"></div>
+        <div class="task-body">
+          <div class="task-title">Add monitors in Uptime Kuma</div>
+          <div class="task-desc">Open :3001, add HTTP monitors for npm, portainer, homepage</div>
+        </div>
+      </li>
+      <li class="task-item" data-task="backup" onclick="toggleTask(this)">
+        <div class="task-check"></div>
+        <div class="task-body">
+          <div class="task-title">Run your first backup</div>
+          <div class="task-desc">Type <code>server-backup</code> in terminal</div>
+        </div>
+      </li>
+      <li class="task-item" data-task="sec" onclick="toggleTask(this)">
+        <div class="task-check"></div>
+        <div class="task-body">
+          <div class="task-title">Check security status</div>
+          <div class="task-desc">Type <code>sec</code> — see firewall, fail2ban, SSH config</div>
+        </div>
+      </li>
+    </ul>
+
+    <div class="task-round">Round 4 — Go Public</div>
+    <ul class="task-list">
+      <li class="task-item" data-task="domain" onclick="toggleTask(this)">
+        <div class="task-check"></div>
+        <div class="task-body">
+          <div class="task-title">Get a domain name</div>
+          <div class="task-desc">Buy one on Cloudflare (~$10/year). Point nameservers to Cloudflare.</div>
+        </div>
+      </li>
+      <li class="task-item" data-task="tunnel" onclick="toggleTask(this)">
+        <div class="task-check"></div>
+        <div class="task-body">
+          <div class="task-title">Set up Cloudflare tunnel</div>
+          <div class="task-desc">Create tunnel in Cloudflare Zero Trust, add public hostnames</div>
+        </div>
+      </li>
+      <li class="task-item" data-task="public" onclick="toggleTask(this)">
+        <div class="task-check"></div>
+        <div class="task-body">
+          <div class="task-title">Access a service from your phone</div>
+          <div class="task-desc">Put one service on a domain, open it from outside your network</div>
+        </div>
+      </li>
+      <li class="task-item" data-task="discord" onclick="toggleTask(this)">
+        <div class="task-check"></div>
+        <div class="task-body">
+          <div class="task-title">Set up Discord alerts</div>
+          <div class="task-desc">Create a Discord webhook, paste it into Uptime Kuma notifications</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- COMMANDS TAB -->
+  <div class="tab-content" id="tab-commands">
+
+    <div class="section-label">Server Kit Tools</div>
+    <div class="cmd-grid">
+      <div class="cmd-item"><div class="cmd-name">menu</div><div class="cmd-desc">Command center — everything in one place</div></div>
+      <div class="cmd-item"><div class="cmd-name">health</div><div class="cmd-desc">Check all services OK / DOWN</div></div>
+      <div class="cmd-item"><div class="cmd-name">sec</div><div class="cmd-desc">Security status — firewall, bans, SSH</div></div>
+      <div class="cmd-item"><div class="cmd-name">hw</div><div class="cmd-desc">Hardware — CPU temps, disks, memory</div></div>
+      <div class="cmd-item"><div class="cmd-name">ports</div><div class="cmd-desc">Scan all ports, match to containers</div></div>
+      <div class="cmd-item"><div class="cmd-name">whats-next</div><div class="cmd-desc">What still needs doing</div></div>
+      <div class="cmd-item"><div class="cmd-name">howdo</div><div class="cmd-desc">Search how to do anything</div></div>
+      <div class="cmd-item"><div class="cmd-name">essentials</div><div class="cmd-desc">Must-know commands on one screen</div></div>
+      <div class="cmd-item"><div class="cmd-name">cheat</div><div class="cmd-desc">Full Linux cheat sheet</div></div>
+      <div class="cmd-item"><div class="cmd-name">server-backup</div><div class="cmd-desc">Backup everything now</div></div>
+      <div class="cmd-item"><div class="cmd-name">ai-models</div><div class="cmd-desc">Manage AI models</div></div>
+      <div class="cmd-item"><div class="cmd-name">deploy</div><div class="cmd-desc">Deploy from GitHub</div></div>
+      <div class="cmd-item"><div class="cmd-name">add-project</div><div class="cmd-desc">Wizard for new Docker project</div></div>
+      <div class="cmd-item"><div class="cmd-name">kit-update</div><div class="cmd-desc">Update server-kit from GitHub</div></div>
+      <div class="cmd-item"><div class="cmd-name">dash</div><div class="cmd-desc">Tmux dashboard layout</div></div>
+    </div>
+
+    <div class="section-label">Docker Shortcuts</div>
+    <div class="cmd-grid">
+      <div class="cmd-item"><div class="cmd-name">dps</div><div class="cmd-desc">Container status table</div></div>
+      <div class="cmd-item"><div class="cmd-name">dlogs NAME</div><div class="cmd-desc">Follow container logs</div></div>
+      <div class="cmd-item"><div class="cmd-name">dcu</div><div class="cmd-desc">docker compose up -d</div></div>
+      <div class="cmd-item"><div class="cmd-name">dcd</div><div class="cmd-desc">docker compose down</div></div>
+      <div class="cmd-item"><div class="cmd-name">dcr</div><div class="cmd-desc">docker compose restart</div></div>
+      <div class="cmd-item"><div class="cmd-name">dcp</div><div class="cmd-desc">Pull latest + restart</div></div>
+    </div>
+
+    <div class="section-label">Emergency Commands</div>
+    <div class="cmd-grid">
+      <div class="cmd-item"><div class="cmd-name">docker logs NAME</div><div class="cmd-desc">See why something is broken</div></div>
+      <div class="cmd-item"><div class="cmd-name">docker restart NAME</div><div class="cmd-desc">Kick a stuck container</div></div>
+      <div class="cmd-item"><div class="cmd-name">docker stats</div><div class="cmd-desc">What's eating RAM/CPU</div></div>
+      <div class="cmd-item"><div class="cmd-name">sudo reboot</div><div class="cmd-desc">Nuclear option</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Info Panel Overlay -->
+<div class="overlay" id="overlay" onclick="closeInfo()"></div>
+<div class="info-panel" id="infoPanel">
+  <button class="info-close" onclick="closeInfo()">&times;</button>
+  <div id="infoPanelContent"></div>
+</div>
+
+<script>
+const IP_KEY = 'serverkit-ip';
+const TASKS_KEY = 'serverkit-tasks';
+
+// Load saved IP
+const savedIp = localStorage.getItem(IP_KEY);
+if (savedIp) document.getElementById('serverIp').value = savedIp;
+
+function getIp() {
+  return document.getElementById('serverIp').value || '192.168.1.229';
+}
+
+function saveIp() {
+  localStorage.setItem(IP_KEY, getIp());
+  alert('IP saved: ' + getIp());
+}
+
+// Tabs
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// Tasks
+function getCompletedTasks() {
+  return JSON.parse(localStorage.getItem(TASKS_KEY) || '[]');
+}
+
+function toggleTask(el) {
+  const task = el.dataset.task;
+  let completed = getCompletedTasks();
+  if (completed.includes(task)) {
+    completed = completed.filter(t => t !== task);
+    el.classList.remove('done');
+    el.querySelector('.task-check').textContent = '';
+  } else {
+    completed.push(task);
+    el.classList.add('done');
+    el.querySelector('.task-check').textContent = '\u2713';
+  }
+  localStorage.setItem(TASKS_KEY, JSON.stringify(completed));
+  updateProgress();
+}
+
+function updateProgress() {
+  const completed = getCompletedTasks();
+  const total = document.querySelectorAll('.task-item').length;
+  const count = completed.length;
+  document.getElementById('progressCount').textContent = count;
+  document.getElementById('progressTotal').textContent = total;
+  document.getElementById('progressFill').style.width = ((count / total) * 100) + '%';
+}
+
+// Load saved task states
+function loadTasks() {
+  const completed = getCompletedTasks();
+  document.querySelectorAll('.task-item').forEach(el => {
+    if (completed.includes(el.dataset.task)) {
+      el.classList.add('done');
+      el.querySelector('.task-check').textContent = '\u2713';
+    }
+  });
+  updateProgress();
+}
+
+// Service info panel
+const serviceInfo = {
+  npm: {
+    name: 'Nginx Proxy Manager',
+    port: ':81 (admin), :80 (HTTP), :443 (HTTPS)',
+    login: 'admin@example.com / changeme',
+    what: 'Routes traffic to the right container based on domain name. Without this, you access everything by IP:port. With this, you use real domain names.',
+    firstVisit: '1. Open the URL below\n2. Login with defaults\n3. CHANGE THE PASSWORD immediately\n4. Start adding Proxy Hosts for your services',
+    verify: 'curl -I http://localhost:80',
+    configure: 'Add a Proxy Host for each service you want on a domain. Domain \u2192 container name \u2192 port.'
+  },
+  portainer: {
+    name: 'Portainer',
+    port: ':9443 (HTTPS)',
+    login: 'Create on first visit (you have 5 minutes)',
+    what: 'Visual Docker management. Click around to see containers, logs, volumes, networks. Everything you can do in terminal, but with a UI.',
+    firstVisit: '1. Open the URL below (accept cert warning)\n2. Create admin account immediately\n3. Select "Local" environment\n4. Explore your containers',
+    verify: 'docker logs portainer | tail -5',
+    configure: 'Nothing required \u2014 auto-detects your Docker setup.'
+  },
+  cloudflared: {
+    name: 'Cloudflare Tunnel',
+    port: 'None (outbound only)',
+    login: 'Configured via token',
+    what: 'Encrypted tunnel to Cloudflare. Makes your services accessible from the internet without opening ports. Your server IP stays hidden.',
+    firstVisit: '1. Create tunnel at one.dash.cloudflare.com\n2. Copy the token\n3. Run: sudo bash ~/server-kit/04-cloudflared-setup.sh\n4. Add public hostnames in Cloudflare dashboard',
+    verify: 'docker ps | grep cloudflared\ndocker logs cloudflared',
+    configure: 'Add public hostnames in Cloudflare \u2192 Tunnels. Point each to http://npm:80'
+  },
+  homepage: {
+    name: 'Homepage',
+    port: ':3000',
+    login: 'None',
+    what: 'Dashboard showing all your services as clickable tiles. Auto-discovers Docker containers.',
+    firstVisit: 'Just open it \u2014 it works automatically.',
+    verify: 'curl -s http://localhost:3000 | head -3',
+    configure: 'Mostly automatic. Custom layout via config files in the container.'
+  },
+  kuma: {
+    name: 'Uptime Kuma',
+    port: ':3001',
+    login: 'Create on first visit',
+    what: 'Monitors your services and alerts you when something goes down. Supports Discord, Slack, email, and push notifications.',
+    firstVisit: '1. Open the URL below\n2. Create admin account\n3. Add monitors for each running service\n4. Set up notification channels',
+    verify: 'docker logs uptime-kuma | tail -5',
+    configure: 'Add HTTP monitors for each service. Add notification channels for alerts.'
+  },
+  netdata: {
+    name: 'Netdata',
+    port: ':19999',
+    login: 'None \u2014 skip any cloud signup prompts',
+    what: 'Real-time graphs for CPU, RAM, disk, network, and per-container stats. 100% free, runs locally.',
+    firstVisit: '1. Open the URL below\n2. Skip/dismiss any cloud signup\n3. Browse the dashboards',
+    verify: 'curl -s http://localhost:19999/api/v1/info | head -3',
+    configure: 'Nothing \u2014 works out of the box.'
+  },
+  dozzle: {
+    name: 'Dozzle',
+    port: ':8090',
+    login: 'None',
+    what: 'Live log viewer for ALL containers in one browser tab. Way easier than docker logs in terminal.',
+    firstVisit: 'Open it, click any container to see its logs.',
+    verify: 'curl -s http://localhost:8090 | head -3',
+    configure: 'Nothing \u2014 reads Docker socket automatically.'
+  },
+  cockpit: {
+    name: 'Cockpit',
+    port: ':9090',
+    login: 'Your Linux username + password',
+    what: 'Web-based server management. Terminal in the browser, system logs, networking, storage. Good from phone/tablet.',
+    firstVisit: '1. Open the URL below\n2. Login with your server username/password\n3. Browse terminal, logs, networking',
+    verify: 'sudo systemctl status cockpit',
+    configure: 'Nothing \u2014 uses OS authentication.'
+  },
+  supabase: {
+    name: 'Supabase',
+    port: ':8000 (Studio)',
+    login: 'Set in .env file',
+    what: 'Full backend in a box. Postgres database + user auth + auto-generated REST API + admin dashboard. Like Firebase but self-hosted.',
+    firstVisit: '1. Install: sudo bash ~/server-kit/08-extras-setup.sh (say y to Supabase)\n2. Open Studio at the URL below\n3. Create your first table',
+    verify: 'docker ps | grep supabase',
+    configure: 'Change default keys in .env \u2014 NEVER expose the Service Role Key.'
+  },
+  surrealdb: {
+    name: 'SurrealDB',
+    port: ':8181',
+    login: 'root / root \u2014 CHANGE THIS',
+    what: 'Flexible database that does relational + document + graph all in one. Good for prototyping.',
+    firstVisit: '1. Install: sudo bash ~/server-kit/08-extras-setup.sh (say y to SurrealDB)\n2. Use surrealist.app to connect\n3. Change default password',
+    verify: 'curl -s http://localhost:8181/health',
+    configure: 'Change root password in docker-compose.yml'
+  },
+  redis: {
+    name: 'Redis',
+    port: ':6379 (Redis), :8082 (Commander UI)',
+    login: 'None by default',
+    what: 'Ultra-fast in-memory data store. Used for caching, sessions, queues. Commander gives you a web UI to browse.',
+    firstVisit: '1. Install: sudo bash ~/server-kit/08-extras-setup.sh (say y to Redis)\n2. Open Commander at :8082\n3. Browse keys',
+    verify: 'docker exec redis redis-cli ping',
+    configure: 'Add a password for production use.'
+  },
+  minio: {
+    name: 'MinIO',
+    port: ':9000 (API), :9001 (Console)',
+    login: 'minioadmin / minioadmin \u2014 CHANGE THIS',
+    what: 'Self-hosted file storage. Works like AWS S3. Upload images, documents, backups.',
+    firstVisit: '1. Install: sudo bash ~/server-kit/08-extras-setup.sh (say y to MinIO)\n2. Open Console at :9001\n3. Change credentials\n4. Create a bucket',
+    verify: 'curl -s http://localhost:9000/minio/health/live',
+    configure: 'Change default credentials. Create buckets for each project.'
+  },
+  n8n: {
+    name: 'n8n',
+    port: ':5678',
+    login: 'Create on first visit',
+    what: 'Workflow automation. Connect services together \u2014 when X happens, do Y. Self-hosted Zapier.',
+    firstVisit: '1. Install: sudo bash ~/server-kit/08-extras-setup.sh (say y to n8n)\n2. Create owner account\n3. Build your first workflow',
+    verify: 'curl -s http://localhost:5678/healthz',
+    configure: 'Add credentials for services you want to connect.'
+  },
+  adminer: {
+    name: 'Adminer',
+    port: ':8083',
+    login: 'Uses your database credentials',
+    what: 'Lightweight database browser. Connect to Postgres, MySQL, SQLite from your browser.',
+    firstVisit: '1. Open the URL below\n2. Pick PostgreSQL\n3. Server: supabase-db, User: postgres, Password: (from .env)',
+    verify: 'curl -s http://localhost:8083 | head -3',
+    configure: 'Nothing \u2014 just a client.'
+  },
+  wikijs: {
+    name: 'Wiki.js',
+    port: ':3003',
+    login: 'Create on first visit',
+    what: 'Self-hosted wiki. Document your server, projects, processes. Searchable with visual editor.',
+    firstVisit: '1. Install: sudo bash ~/server-kit/08-extras-setup.sh (say y to Wiki.js)\n2. Follow setup wizard\n3. Create your first page',
+    verify: 'docker ps | grep wikijs',
+    configure: 'Pick SQLite for storage (simplest).'
+  },
+  ollama: {
+    name: 'Ollama',
+    port: ':11434 (API only)',
+    login: 'None',
+    what: 'Runs AI models locally. The engine \u2014 Open WebUI and OpenClaw talk to this.',
+    firstVisit: '1. Start: cd /srv/docker/ai && docker compose up -d\n2. Pull a model: docker exec ollama ollama pull mistral:7b\n3. Test: docker exec -it ollama ollama run mistral:7b',
+    verify: 'curl -s http://localhost:11434/api/tags',
+    configure: 'Pull models based on your RAM. Needs GPU for good speed.'
+  },
+  openwebui: {
+    name: 'Open WebUI',
+    port: ':3004',
+    login: 'Create on first visit',
+    what: 'ChatGPT-like interface for your local AI models. Pick a model, type, chat.',
+    firstVisit: '1. Start AI stack: cd /srv/docker/ai && docker compose up -d\n2. Open the URL below\n3. Create account\n4. Select a model from dropdown\n5. Chat',
+    verify: 'curl -s http://localhost:3004 | head -3',
+    configure: 'Needs Ollama running with at least one model pulled.'
+  },
+  openclaw: {
+    name: 'OpenClaw',
+    port: ':3005',
+    login: 'Create on first visit',
+    what: 'Autonomous AI agent. Can plan, execute, and iterate on tasks.',
+    firstVisit: '1. Start: cd /srv/docker/openclaw && docker compose up -d\n2. Open the URL below\n3. Create account\n4. Needs Ollama running',
+    verify: 'curl -s http://localhost:3005 | head -3',
+    configure: 'Needs Ollama running. CPU-only will be slow.'
+  }
+};
+
+function openInfo(id) {
+  const info = serviceInfo[id];
+  if (!info) return;
+  const ip = getIp();
+  const port = info.port.split(' ')[0].replace(':', '');
+  const protocol = (port === '9443' || port === '9090') ? 'https' : 'http';
+  const url = port && port !== 'None' ? `${protocol}://${ip}:${port}` : null;
+
+  let html = `<h2>${info.name}</h2>`;
+  html += `<div class="info-port">${info.port}</div>`;
+
+  html += `<div class="info-section"><h3>What is this?</h3><p>${info.what}</p></div>`;
+  html += `<div class="info-section"><h3>Default Login</h3><p>${info.login}</p></div>`;
+  html += `<div class="info-section"><h3>First Visit</h3><pre><code>${info.firstVisit}</code></pre></div>`;
+  html += `<div class="info-section"><h3>What to Configure</h3><p>${info.configure}</p></div>`;
+  html += `<div class="info-section"><h3>Verify It Works</h3><pre><code>${info.verify}</code></pre></div>`;
+
+  if (url) {
+    html += `<a class="open-btn" href="${url}" target="_blank">Open ${info.name}</a>`;
+  }
+
+  document.getElementById('infoPanelContent').innerHTML = html;
+  document.getElementById('infoPanel').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+}
+
+function closeInfo() {
+  document.getElementById('infoPanel').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+
+// Escape key closes panel
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeInfo(); });
+
+// Init
+loadTasks();
+</script>
+</body>
+</html>
