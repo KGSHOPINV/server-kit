@@ -41,6 +41,7 @@ const sidebars: SidebarsConfig = {
         'how-to/give-someone-access',
         'how-to/github-auto-deploy',
         'how-to/manage-ai-models',
+        'how-to/storage-and-raid',
       ],
     },
     {
