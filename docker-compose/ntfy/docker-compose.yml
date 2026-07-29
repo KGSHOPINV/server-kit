@@ -1,0 +1,23 @@
+services:
+  ntfy:
+    image: binwiederhier/ntfy:latest
+    container_name: ntfy
+    restart: always
+    ports:
+      - "8085:80"
+    command: serve
+    environment:
+      - TZ=America/New_York
+    volumes:
+      - ntfy-cache:/var/cache/ntfy
+      - ntfy-etc:/etc/ntfy
+    networks:
+      - proxy
+
+volumes:
+  ntfy-cache:
+  ntfy-etc:
+
+networks:
+  proxy:
+    external: true

@@ -30,6 +30,7 @@ SCRIPTS=(
   "12-security-setup.sh:Security Hardening"
   "13-github-deploy-setup.sh:GitHub Deploy"
   "14-terminal-setup.sh:Terminal Setup (prompt, dashboard, banner)"
+  "15-server-console-setup.sh:Server Console + ChatOps (Cockpit, alerts)"
 )
 
 # --- Check for previous progress ---
