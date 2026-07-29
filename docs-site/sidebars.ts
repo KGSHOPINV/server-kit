@@ -5,6 +5,7 @@ const sidebars: SidebarsConfig = {
     'index',
     'first-time-setup',
     'first-login',
+    'app-directory',
     {
       type: 'category',
       label: 'Services',
