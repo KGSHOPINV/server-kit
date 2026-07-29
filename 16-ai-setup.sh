@@ -120,12 +120,12 @@ if [[ "$install_ai" == "y" ]]; then
   read -p "  Pick [1-6]: " model_choice
 
   case $model_choice in
-    1) docker exec ollama ollama pull gemma4:2b ;;
+    1) docker exec ollama ollama pull gemma4:e2b ;;
     2) docker exec ollama ollama pull gemma4:12b ;;
     3) docker exec ollama ollama pull llama3.1:8b ;;
     4) docker exec ollama ollama pull mistral:7b ;;
     5)
-      docker exec ollama ollama pull gemma4:2b
+      docker exec ollama ollama pull gemma4:e2b
       docker exec ollama ollama pull gemma4:12b
       docker exec ollama ollama pull llama3.1:8b
       docker exec ollama ollama pull mistral:7b
@@ -176,7 +176,7 @@ case $choice in
   2)
     echo ""
     echo "  Popular models:"
-    echo "    gemma4:2b     — Google, small, fast"
+    echo "    gemma4:e2b     — Google, small, fast"
     echo "    gemma4:12b    — Google, great quality"
     echo "    gemma4:31b    — Google, best quality (needs lots of RAM)"
     echo "    llama3.1:8b   — Meta, good all-rounder"
