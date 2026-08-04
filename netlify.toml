@@ -1,0 +1,14 @@
+[build]
+  base    = "docs-site"
+  command = "npm run build"
+  publish = "build"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[edge_functions]
+  directory = "netlify/edge-functions"
+
+[[edge_functions]]
+  path = "/*"
+  function = "auth"
