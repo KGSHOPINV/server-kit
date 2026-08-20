@@ -1,0 +1,24 @@
+# ============================================================
+# ~/.server-alerts.conf — alert system config
+# Copy to your home dir: cp server-alerts.conf.example ~/.server-alerts.conf
+# This file is NEVER committed to git (add to .gitignore)
+# ============================================================
+
+# ntfy destination
+NTFY_URL=http://localhost:8085        # your ntfy server URL
+NTFY_TOPIC=my-server-alerts          # subscribe to this topic in ntfy app
+NTFY_TOKEN=                          # leave blank if no auth on ntfy
+
+# Alert thresholds
+DISK_WARN=85                         # % used — yellow alert
+DISK_CRIT=92                         # % used — red alert
+LOAD_WARN=80                         # CPU % — alert threshold
+MEM_WARN=90                          # RAM % — alert threshold
+
+# Hub port (for startup alert link)
+HUB_PORT=8765
+
+# AI explanation layer (optional)
+# Get a key at: https://console.anthropic.com
+# Leave blank to disable AI explanations entirely
+ANTHROPIC_API_KEY=
