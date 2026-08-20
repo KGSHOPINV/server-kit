@@ -26,6 +26,7 @@ sudo cp "$SCRIPT_DIR/tools/essentials.sh" /usr/local/bin/essentials
 sudo cp "$SCRIPT_DIR/tools/server-register.sh" /usr/local/bin/server-register
 sudo cp "$SCRIPT_DIR/tools/server-list.sh" /usr/local/bin/kit-servers
 sudo cp "$SCRIPT_DIR/tools/server-sync.sh" /usr/local/bin/kit-sync
+sudo cp "$SCRIPT_DIR/tools/network-check.sh" /usr/local/bin/network-check
 
 sudo chmod +x /usr/local/bin/server-menu
 sudo chmod +x /usr/local/bin/port-scan
@@ -39,6 +40,7 @@ sudo chmod +x /usr/local/bin/essentials
 sudo chmod +x /usr/local/bin/server-register
 sudo chmod +x /usr/local/bin/kit-servers
 sudo chmod +x /usr/local/bin/kit-sync
+sudo chmod +x /usr/local/bin/network-check
 
 # --- Bash aliases ---
 echo ""
