@@ -70,3 +70,16 @@ Run any script on its own:
 ## After Install
 
 Type `menu` to open the server command center.
+
+## Federation
+
+ServerHub (server-kit) participates in a three-system federation with FlareVault and Metaforge.
+
+| System | Role | Repo |
+|--------|------|------|
+| **Metaforge** | The Ledger — knows what things ARE | [KGSHOPINV/metaforge](https://github.com/KGSHOPINV/metaforge) |
+| **FlareVault** | The Vault — controls what things CAN DO | [KGSHOPINV/flarevault](https://github.com/KGSHOPINV/flarevault) |
+| **ServerHub** | The Ops Floor — manages what things RUN ON | [KGSHOPINV/server-kit](https://github.com/KGSHOPINV/server-kit) |
+
+Doctrines, bilateral contracts, and the trilateral integration spec live in the shared repo:
+**[KGSHOPINV/FV-MF-SH-integrations](https://github.com/KGSHOPINV/FV-MF-SH-integrations)**
