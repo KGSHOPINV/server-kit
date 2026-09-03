@@ -7,9 +7,9 @@
 | `POST /api/activity` (FV writes) | LIVE | Any system can write to SH activity log |
 | Docker event watcher | LIVE | All container events logged, ntfy on die |
 | FV node container watch | LIVE | flarevault-node at :7777 watched automatically |
-| `GET /api/ports` | NOT BUILT | Data exists, endpoint not exposed — NEXT |
+| `GET /api/ports` | LIVE | Port landscape with protocol, state, assigned_by (FV-BI-SH schema) |
 | Push container events to FV | NOT BUILT | Callback URL undefined — after /api/ports |
 | Push runtime confirmation to FV | NOT BUILT | Same blocker |
 | Credential receipt pull on boot | NOT BUILT | FV-side not yet built |
 
-Current gate: /api/ports. FV needs this before any deploy. Building next.
+Gate cleared: /api/ports is LIVE. Next gate: push container events to FV (callback URL needed from FV).

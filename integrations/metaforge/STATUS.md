@@ -8,9 +8,9 @@
 | `GET /api/containers` | LIVE | Running containers with name, ports, status |
 | `GET /api/activity` | LIVE | Full event log, filterable |
 | `POST /api/activity` (MF writes) | LIVE | MF can write entity events to SH log |
-| `GET /api/ports` | NOT BUILT | Building next — needed for drift detection |
+| `GET /api/ports` | LIVE | Port landscape with protocol, state, assigned_by (FV-BI-SH schema) |
 | Push container events to MF | NOT BUILT | Callback URL not defined |
 | Drift detection | NOT BUILT | Needs /api/ports + MF expected manifest |
 | Server registration handshake | NOT BUILT | SH->MF flow to register server as entity |
 
-Most read endpoints are live. Gaps: /api/ports, push events, drift, registration.
+All read endpoints live. Remaining gaps: push events, drift detection, server registration handshake.
