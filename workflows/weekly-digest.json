@@ -1,0 +1,158 @@
+{
+  "name": "Weekly Server Digest",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "weeksInterval": 1,
+              "triggerAtDay": [
+                0
+              ],
+              "triggerAtHour": 8,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      },
+      "id": "wd000003-0000-0000-0000-000000000001",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8765/api/status",
+        "options": {}
+      },
+      "id": "wd000003-0000-0000-0000-000000000002",
+      "name": "Get Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8765/api/containers",
+        "options": {}
+      },
+      "id": "wd000003-0000-0000-0000-000000000003",
+      "name": "Get Containers",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const status = $(\"Get Status\").first().json;\nconst raw = $input.first().json;\nconst containers = Array.isArray(raw) ? raw : (raw.containers || []);\nconst running = containers.filter(c => c.running).length;\nconst total = containers.length;\nconst disks = status.disks || [];\nconst diskLines = disks.map(d => '  ' + d.device + ': ' + d.pct + '% used').join('\\n');\nconst uptime = status.uptime || 'unknown';\nconst lines = [\n  'Weekly Server Digest -- ksgcohub',\n  'Date: ' + new Date().toISOString().split('T')[0],\n  '',\n  'Containers: ' + running + '/' + total + ' running',\n  'Uptime: ' + uptime,\n  '',\n  'Disk Usage:',\n  diskLines || '  No disk data'\n];\nreturn [{ json: { summary: lines.join('\\n') } }];"
+      },
+      "id": "wd000003-0000-0000-0000-000000000004",
+      "name": "Build Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8085/digest",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Title",
+              "value": "Weekly Server Digest"
+            },
+            {
+              "name": "Priority",
+              "value": "default"
+            },
+            {
+              "name": "Tags",
+              "value": "white_check_mark,server"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "text/plain",
+        "body": "={{ $json.summary }}",
+        "options": {}
+      },
+      "id": "wd000003-0000-0000-0000-000000000005",
+      "name": "Send Digest",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Status": {
+      "main": [
+        [
+          {
+            "node": "Get Containers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Containers": {
+      "main": [
+        [
+          {
+            "node": "Build Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Summary": {
+      "main": [
+        [
+          {
+            "node": "Send Digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}
