@@ -22,13 +22,14 @@ services:
     image: surrealdb/surrealdb:latest       # official SurrealDB image
     container_name: surrealdb
     restart: always                         # auto-restarts on crash or reboot
+    user: root
     ports:
       - "8001:8000"                         # 8001 host → 8000 container (HTTP + WebSocket API)
-    command: start --user root --pass root file:/data/srdb.db
+    command: start --user root --pass root surrealkv:///data/srdb.db
     # ↑ starts SurrealDB with:
     #   --user root   → root username — CHANGE THIS for production
     #   --pass root   → root password — CHANGE THIS for production
-    #   file:/data/srdb.db → persist data to a file inside the container (mapped to volume below)
+    #   surrealkv:///data/srdb.db → persist data to a file inside the container (mapped to volume below)
     volumes:
       - surrealdb-data:/data                # persists database file at /data/srdb.db
     networks:
