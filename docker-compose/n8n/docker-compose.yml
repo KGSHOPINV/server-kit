@@ -9,7 +9,9 @@ services:
       - N8N_HOST=0.0.0.0
       - N8N_PORT=5678
       - N8N_PROTOCOL=http
-      - GENERIC_TIMEZONE=America/New_York
+      - GENERIC_TIMEZONE=${TZ:-America/New_York}
+      # IMPORTANT: Set N8N_ENCRYPTION_KEY in your .env file
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY:-changeme-set-this-in-your-env}
     volumes:
       - n8n-data:/home/node/.n8n
     networks:

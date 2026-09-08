@@ -7,7 +7,7 @@ services:
       - "8085:80"
     command: serve
     environment:
-      - TZ=America/New_York
+      - TZ=${TZ:-America/New_York}
     volumes:
       - ntfy-cache:/var/cache/ntfy
       - ntfy-etc:/etc/ntfy

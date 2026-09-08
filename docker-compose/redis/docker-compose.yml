@@ -5,7 +5,8 @@ services:
     restart: always
     ports:
       - "6379:6379"
-    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    # Set REDIS_PASSWORD in your .env file
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru --requirepass ${REDIS_PASSWORD:-changeme}
     volumes:
       - redis-data:/data
     networks:

@@ -4,7 +4,7 @@ services:
     container_name: surrealdb
     restart: always
     ports:
-      - "8181:8000"
+      - "8001:8000"
     command: start --user root --pass root file:/data/srdb.db
     volumes:
       - surrealdb-data:/data
