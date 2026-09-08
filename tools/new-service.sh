@@ -248,6 +248,21 @@ cmd_add() {
   echo ""
   echo -e "  Once running, hub discovers it automatically on next refresh."
   success "Service scaffold created: ${full_name} → port ${port}"
+  # --- Offer to add to server.manifest.yml ---
+  _MANIFEST_PATH=""
+  for _cand in ~/server-kit/server.manifest.yml /srv/server-kit/server.manifest.yml /opt/server-kit/server.manifest.yml; do
+    _cand="${_cand/#\~/$HOME}"
+    if [[ -f "$_cand" ]]; then _MANIFEST_PATH="$_cand"; break; fi
+  done
+  if [[ -n "$_MANIFEST_PATH" ]]; then
+    echo ""
+    read -rp "  Add ${full_name} to server.manifest.yml? (y/n): " _add_mf
+    if [[ "${_add_mf:-n}" == "y" ]]; then
+      printf '\n  - name: %s\n    port: %s\n    category: %s\n    type: docker\n    compose: %s\n    required: false\n' \
+        "$full_name" "$port" "$category" "$service_dir" >> "$_MANIFEST_PATH"
+      success "Added ${full_name} to server.manifest.yml"
+    fi
+  fi
 }
 
 # ── Main ──────────────────────────────────────────────────────────────────────

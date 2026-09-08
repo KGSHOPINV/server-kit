@@ -30,6 +30,8 @@ sudo cp "$SCRIPT_DIR/tools/network-check.sh" /usr/local/bin/network-check
 sudo cp "$SCRIPT_DIR/tools/deploy-project.sh" /usr/local/bin/deploy-project
 sudo cp "$SCRIPT_DIR/tools/ai-models.sh" /usr/local/bin/ai-models
 sudo cp "$SCRIPT_DIR/tools/new-service.sh" /usr/local/bin/new-service
+sudo cp "$SCRIPT_DIR/tools/kit-status.sh" /usr/local/bin/kit-status
+sudo cp "$SCRIPT_DIR/tools/kit-status-parse.py" /usr/local/lib/kit-status-parse.py
 
 sudo chmod +x /usr/local/bin/server-menu
 sudo chmod +x /usr/local/bin/port-scan
@@ -47,6 +49,7 @@ sudo chmod +x /usr/local/bin/network-check
 sudo chmod +x /usr/local/bin/deploy-project
 sudo chmod +x /usr/local/bin/ai-models
 sudo chmod +x /usr/local/bin/new-service
+sudo chmod +x /usr/local/bin/kit-status
 
 # --- Bash aliases ---
 echo ""
@@ -96,6 +99,7 @@ echo "    ports      - Scan open ports"
 echo "    health     - Check all services"
 echo "    cheat      - Linux cheat sheet"
 echo "    add-project - Add a new Docker project"
+    echo "    kit-status  - Check desired vs actual service state"
 echo ""
 echo "  Docker shortcuts:"
 echo "    dps        - Docker containers status"

@@ -1,0 +1,113 @@
+# server.manifest.yml — desired state for ksgcohub
+# kit-status reads this and compares against live docker ps
+
+server:
+  name: ksgcohub
+  os: ubuntu-24.04
+  data_drive: /srv/data
+
+port_lanes:
+  infrastructure: "3000-3099"
+  monitoring: "19000-19999"
+  automation: "5600-5699"
+  database_pg: "5400-5499"
+  database_cache: "6300-6399"
+  api_tools: "8000-8099"
+  notifications: "8080-8089"
+  storage: "9000-9099"
+  admin: "9400-9499"
+  ai: "11000-11999"
+
+services:
+  - name: npm
+    port: 80
+    admin_port: 81
+    category: infrastructure
+    type: docker
+    compose: /srv/docker/npm
+    required: true
+
+  - name: homepage
+    port: 3000
+    category: infrastructure
+    type: docker
+    compose: /srv/docker/homepage
+    required: false
+
+  - name: uptime-kuma
+    port: 3001
+    category: monitoring
+    type: docker
+    compose: /srv/docker/uptime-kuma
+    required: false
+
+  - name: netdata
+    port: 19999
+    category: monitoring
+    type: docker
+    compose: /srv/docker/netdata
+    required: false
+
+  - name: portainer
+    port: 9443
+    category: admin
+    type: docker
+    compose: /srv/docker/portainer
+    required: false
+
+  - name: ntfy
+    port: 8085
+    category: notifications
+    type: docker
+    compose: /srv/docker/ntfy
+    required: false
+
+  - name: n8n
+    port: 5678
+    category: automation
+    type: docker
+    compose: /srv/docker/n8n
+    required: false
+
+  - name: redis
+    port: 6379
+    category: database_cache
+    type: docker
+    compose: /srv/docker/redis
+    required: false
+
+  - name: surrealdb
+    port: 8001
+    category: api_tools
+    type: docker
+    compose: /srv/docker/surrealdb
+    required: false
+
+  - name: dozzle
+    port: 8090
+    category: api_tools
+    type: docker
+    compose: /srv/docker/dozzle
+    required: false
+
+  - name: redis-commander
+    port: 8082
+    category: api_tools
+    type: docker
+    compose: /srv/docker/redis-commander
+    required: false
+
+  - name: nextcloud
+    port: 8181
+    category: storage
+    type: snap
+    compose: ~
+    note: "Managed by snap, not docker"
+    required: false
+
+  - name: hub
+    port: 8765
+    category: core
+    type: systemd
+    path: ~/hub
+    required: true
