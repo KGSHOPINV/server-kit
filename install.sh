@@ -226,7 +226,13 @@ TZ_NAME=$(whiptail --inputbox "Timezone (e.g. America/New_York):" 8 55 "$DEFAULT
 HUB_PASS=$(whiptail --passwordbox "Hub admin password:" 8 50 \
   --title "Server Kit Setup (1/3)" 3>&1 1>&2 2>&3) || exit 0
 
-export SERVER_IP SERVER_GW SERVER_DNS ADMIN_USER TZ_NAME INSTALL_DIR
+# Server identity name — shows in hub /api/identity and federation peer list
+DEFAULT_NAME="${SERVER_NAME:-$(hostname)}"
+SERVER_NAME=$(whiptail --inputbox "Server name (short label for peer mesh):\n\nThis is how other hubs will identify this server.\nExamples: main-server, homelab-2, office-node" \
+  11 60 "$DEFAULT_NAME" \
+  --title "Server Kit Setup (1/3)" 3>&1 1>&2 2>&3) || exit 0
+
+export SERVER_IP SERVER_GW SERVER_DNS ADMIN_USER TZ_NAME SERVER_NAME INSTALL_DIR
 
 # Save config for re-runs
 cat > "$CONFIG" <<CFGEOF
@@ -235,6 +241,7 @@ SERVER_GW=$SERVER_GW
 SERVER_DNS=$SERVER_DNS
 ADMIN_USER=$ADMIN_USER
 TZ_NAME=$TZ_NAME
+SERVER_NAME=$SERVER_NAME
 INSTALL_DIR=$INSTALL_DIR
 CFGEOF
 
@@ -414,6 +421,57 @@ run_step "console"   "Server Console"         "15-server-console-setup.sh"
 [[ "$CHOICES" =~ n8n|redis|surrealdb|minio|adminer|mailpit|wikijs ]] && \
   run_step "extras" "Extras (n8n/Redis/etc)" "08-extras-setup.sh"
 [[ "$CHOICES" =~ ai         ]] && run_step "ai"         "AI Stack"           "16-ai-setup.sh"
+
+# ── Peer mesh registration ──────────────────────────────────────────────────────
+# Ask if this server should pair with an existing hub.
+# The peer/register endpoint does a bidirectional handshake — both hubs learn about each other.
+
+HUB_PORT_ACTUAL=8765
+MY_TS_IP=$(tailscale ip -4 2>/dev/null || echo "")
+MY_HUB_URL=""
+if [ -n "$MY_TS_IP" ]; then
+  MY_HUB_URL="http://${MY_TS_IP}:${HUB_PORT_ACTUAL}"
+elif [ -n "${SERVER_IP:-}" ]; then
+  MY_HUB_URL="http://${SERVER_IP}:${HUB_PORT_ACTUAL}"
+fi
+
+# Wait for hub to be ready (it starts in step 2)
+HUB_READY=false
+for i in $(seq 1 12); do
+  if curl -sf "http://localhost:${HUB_PORT_ACTUAL}/api/status" >/dev/null 2>&1; then
+    HUB_READY=true; break
+  fi
+  sleep 5
+done
+
+if $HUB_READY; then
+  # Store this server's hub_url in its own config so /api/identity returns the right URL
+  if [ -n "$MY_HUB_URL" ]; then
+    curl -sf -X POST "http://localhost:${HUB_PORT_ACTUAL}/api/config" \
+      -H 'Content-Type: application/json' \
+      -d "{\"hub_url\": \"${MY_HUB_URL}\"}" >/dev/null 2>&1 || true
+  fi
+
+  # Ask about peer pairing (non-blocking — skip if whiptail not available)
+  if command -v whiptail >/dev/null 2>&1; then
+    PEER_URL=$(whiptail --inputbox \
+      "Peer mesh — optional\n\nEnter the hub URL of an existing server to pair with.\nLeave blank to skip.\n\nExample: http://100.75.1.105:8765" \
+      14 60 "" --title "Peer Registration" 3>&1 1>&2 2>&3) || PEER_URL=""
+  else
+    echo ""
+    read -rp "  Hub URL to peer with (leave blank to skip): " PEER_URL
+  fi
+
+  PEER_URL=$(echo "$PEER_URL" | tr -d '[:space:]')
+  if [ -n "$PEER_URL" ]; then
+    info "Registering with peer hub at $PEER_URL ..."
+    RESULT=$(curl -sf -X POST "${PEER_URL}/api/peer/register" \
+      -H 'Content-Type: application/json' \
+      -d "{\"hub_url\": \"${MY_HUB_URL}\", \"echo\": true}" 2>&1) && \
+      success "Peer registered! Both hubs now know each other." || \
+      warn "Peer registration failed (hub may be offline — run later: curl -X POST ${PEER_URL}/api/peer/register -d '{\"hub_url\":\"${MY_HUB_URL}\",\"echo\":true}')"
+  fi
+fi
 
 # ── Done ────────────────────────────────────────────────────────────────────────
 show_summary
