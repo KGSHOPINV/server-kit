@@ -208,6 +208,13 @@ DEFAULT_IP="${SERVER_IP:-$(ip route get 1 2>/dev/null | awk '{print $7}' | head 
 SERVER_IP=$(whiptail --inputbox "Server local IP address:" 8 50 "$DEFAULT_IP" \
   --title "Server Kit Setup (1/3)" 3>&1 1>&2 2>&3) || exit 0
 
+# Detect gateway automatically
+DEFAULT_GW=$(ip route | awk '/default/ {print $3}' | head -1)
+SERVER_GW=$(whiptail --inputbox "Gateway IP address:" 8 50 "$DEFAULT_GW" \
+  --title "Server Kit Setup (1/3)" 3>&1 1>&2 2>&3) || exit 0
+
+SERVER_DNS="1.1.1.1,8.8.8.8"
+
 DEFAULT_USER="${ADMIN_USER:-${USER:-admin1}}"
 ADMIN_USER=$(whiptail --inputbox "Admin username (your current user):" 8 50 "$DEFAULT_USER" \
   --title "Server Kit Setup (1/3)" 3>&1 1>&2 2>&3) || exit 0
@@ -219,11 +226,13 @@ TZ_NAME=$(whiptail --inputbox "Timezone (e.g. America/New_York):" 8 55 "$DEFAULT
 HUB_PASS=$(whiptail --passwordbox "Hub admin password:" 8 50 \
   --title "Server Kit Setup (1/3)" 3>&1 1>&2 2>&3) || exit 0
 
-export SERVER_IP ADMIN_USER TZ_NAME INSTALL_DIR
+export SERVER_IP SERVER_GW SERVER_DNS ADMIN_USER TZ_NAME INSTALL_DIR
 
 # Save config for re-runs
 cat > "$CONFIG" <<CFGEOF
 SERVER_IP=$SERVER_IP
+SERVER_GW=$SERVER_GW
+SERVER_DNS=$SERVER_DNS
 ADMIN_USER=$ADMIN_USER
 TZ_NAME=$TZ_NAME
 INSTALL_DIR=$INSTALL_DIR
@@ -289,6 +298,15 @@ echo ""
 
 # Fundamentals — always
 run_step "system"    "System Setup"           "01-system-setup.sh"
+
+# Set static IP — do this before anything else depends on the network
+if ! step_done "static-ip"; then
+  export SERVER_GW
+  bash "$INSTALL_DIR/static-ip-setup.sh" && mark_done "static-ip" || warn "Static IP setup failed — continuing with DHCP"
+else
+  skipped "Static IP"
+fi
+
 run_step "docker"    "Docker Install"         "02-docker-install.sh"
 # Give current session docker access without needing logout/login
 sudo chmod 666 /var/run/docker.sock 2>/dev/null || true
