@@ -1,0 +1,18 @@
+services:
+  # Watchtower - auto-updates Docker containers
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: watchtower
+    restart: always
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_SCHEDULE=0 0 4 * * *
+      - WATCHTOWER_INCLUDE_STOPPED=false
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

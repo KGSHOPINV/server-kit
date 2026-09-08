@@ -126,7 +126,7 @@ fi
 echo ""
 read -p "Install Watchtower (auto-update containers daily)? (y/n): " install_watchtower
 if [[ "$install_watchtower" == "y" ]]; then
-  deploy_service "watchtower" "backup"
+  deploy_service "watchtower" "watchtower"
 fi
 
 # === SUMMARY ===
@@ -137,7 +137,7 @@ echo "  08 - EXTRAS COMPLETE"
 echo ""
 IP=$(hostname -I | awk '{print $1}')
 echo "  Homepage:         http://$IP:3000"
-echo "  Dozzle:           http://$IP:8080"
+echo "  Dozzle:           http://$IP:8090"
 [[ "$install_redis" == "y" ]]      && echo "  Redis Commander:  http://$IP:8082"
 [[ "$install_minio" == "y" ]]      && echo "  MinIO Console:    http://$IP:9001"
 [[ "$install_supa" == "y" ]]       && echo "  Supabase Studio:  http://$IP:8000"

@@ -157,7 +157,7 @@ while true; do
     19)
       network-check
       ;;
-
+    0)
       echo ""
       exit 0
       ;;

@@ -59,7 +59,9 @@ sudo ufw allow 443/tcp    # HTTPS
 sudo ufw allow 81/tcp     # NPM Admin
 sudo ufw allow 3001/tcp   # Uptime Kuma
 sudo ufw allow 9443/tcp   # Portainer
-sudo ufw allow 8080/tcp   # Dozzle
+sudo ufw allow 8090/tcp   # Dozzle
+sudo ufw allow 8085/tcp   # ntfy
+sudo ufw allow 8765/tcp   # hub
 sudo ufw allow 3000/tcp   # Homepage / general app port
 sudo ufw allow 8000/tcp   # Supabase Studio
 sudo ufw allow 5678/tcp   # n8n

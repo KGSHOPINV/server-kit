@@ -96,7 +96,7 @@ run_step() {
     info "[$label] attempt $attempt..."
     local tmp=$(mktemp)
 
-    if bash "$script_path" >> "$tmp" 2>&1; then
+    if bash "$script_path" >> "$tmp"; then
       cat "$tmp" >> "$LOG"
       rm -f "$tmp"
       success "$label"
@@ -290,6 +290,8 @@ echo ""
 # Fundamentals — always
 run_step "system"    "System Setup"           "01-system-setup.sh"
 run_step "docker"    "Docker Install"         "02-docker-install.sh"
+# Give current session docker access without needing logout/login
+sudo chmod 666 /var/run/docker.sock 2>/dev/null || true
 
 # ── Server Hub comes up FIRST — visible in browser before anything else installs
 # ── Step 5: Server Hub ──────────────────────────────────────────────────────────
@@ -324,6 +326,7 @@ After=network.target
 User=$ADMIN_USER
 WorkingDirectory=$HUB_DIR
 ExecStart=/usr/bin/python3 $HUB_DIR/server.py
+EnvironmentFile=-/etc/default/hub
 Environment=HUB_LOCAL=1
 Environment=HUB_PORT=8765
 Environment=HUB_SERVER_IP=$SERVER_IP
@@ -333,6 +336,9 @@ RestartSec=5
 [Install]
 WantedBy=multi-user.target
 ENDSVC
+
+  # Write hub admin password to environment file
+  echo "HUB_ADMIN_PASS=$HUB_PASS" | sudo tee /etc/default/hub > /dev/null 2>/dev/null || true
 
   sudo systemctl daemon-reload
   sudo systemctl enable hub
@@ -365,6 +371,7 @@ fi
 run_step "npm"       "Nginx Proxy Manager"    "03-npm-setup.sh"
 run_step "backup"    "Backup System"          "09-backup-setup.sh"
 run_step "helpers"   "Linux Helper Tools"     "10-linux-helper-setup.sh"
+run_step "hardware-monitor" "Hardware Monitor"       "11-hardware-monitor-setup.sh"
 run_step "security"  "Security Setup"         "12-security-setup.sh"
 run_step "terminal"  "Terminal Setup"         "14-terminal-setup.sh"
 run_step "console"   "Server Console"         "15-server-console-setup.sh"
@@ -374,7 +381,7 @@ run_step "console"   "Server Console"         "15-server-console-setup.sh"
 [[ "$CHOICES" =~ cloudflare ]] && run_step "cloudflare" "Cloudflare Tunnel"  "04-cloudflared-setup.sh"
 [[ "$CHOICES" =~ monitoring ]] && run_step "monitoring" "Monitoring Stack"   "06-monitoring-setup.sh"
 [[ "$CHOICES" =~ claude     ]] && run_step "claude"     "Claude CLI"         "07-claude-cli-setup.sh"
-[[ "$CHOICES" =~ "n8n\|redis\|surrealdb\|minio\|adminer\|mailpit\|wikijs" ]] && \
+[[ "$CHOICES" =~ n8n|redis|surrealdb|minio|adminer|mailpit|wikijs ]] && \
   run_step "extras" "Extras (n8n/Redis/etc)" "08-extras-setup.sh"
 [[ "$CHOICES" =~ ai         ]] && run_step "ai"         "AI Stack"           "16-ai-setup.sh"
 

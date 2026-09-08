@@ -72,6 +72,7 @@ TOOLS=(
   "server-register.sh:server-register"
   "server-list.sh:kit-servers"
   "server-sync.sh:kit-sync"
+  "network-check.sh:network-check"
 )
 
 for tool in "${TOOLS[@]}"; do

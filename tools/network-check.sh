@@ -83,7 +83,7 @@ show_status() {
 do_renew_dhcp() {
   echo ''
   echo "  Renewing DHCP on $IFACE..."
-  sudo dhcpcd "$IFACE" 2>&1 | tail -5
+  sudo dhclient "$IFACE" 2>/dev/null || sudo networkctl renew "$IFACE" 2>/dev/null || echo "DHCP renew not supported on this system"
   echo ''
   read -p '  Done. Enter to continue...'
 }

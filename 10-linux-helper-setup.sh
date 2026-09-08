@@ -27,6 +27,7 @@ sudo cp "$SCRIPT_DIR/tools/server-register.sh" /usr/local/bin/server-register
 sudo cp "$SCRIPT_DIR/tools/server-list.sh" /usr/local/bin/kit-servers
 sudo cp "$SCRIPT_DIR/tools/server-sync.sh" /usr/local/bin/kit-sync
 sudo cp "$SCRIPT_DIR/tools/network-check.sh" /usr/local/bin/network-check
+sudo cp "$SCRIPT_DIR/tools/deploy-project.sh" /usr/local/bin/deploy-project
 
 sudo chmod +x /usr/local/bin/server-menu
 sudo chmod +x /usr/local/bin/port-scan
@@ -41,6 +42,7 @@ sudo chmod +x /usr/local/bin/server-register
 sudo chmod +x /usr/local/bin/kit-servers
 sudo chmod +x /usr/local/bin/kit-sync
 sudo chmod +x /usr/local/bin/network-check
+sudo chmod +x /usr/local/bin/deploy-project
 
 # --- Bash aliases ---
 echo ""
@@ -58,6 +60,7 @@ alias dcd="docker compose down"
 alias dcr="docker compose restart"
 alias dcp="docker compose pull && docker compose up -d"
 alias update-kit="kit-update"
+alias hw='hw-monitor'
 # === END SERVER KIT ==='
 
 if ! grep -q "SERVER KIT ALIASES" ~/.bashrc 2>/dev/null; then

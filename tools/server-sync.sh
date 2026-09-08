@@ -46,11 +46,11 @@ case $method in
       echo "  Pulling latest registry..."
       git pull origin main 2>/dev/null
 
-      # Merge: combine all server entries (deduplicate by id)
+      # Deduplicate after git pull (git has already merged remote changes into the file)
       if [ -f "$REGISTRY_FILE" ]; then
         TMP=$(mktemp)
-        jq -s '.[0] + .[1] | group_by(.id) | map(max_by(.last_seen))' \
-          "$REGISTRY_FILE" "$REGISTRY_FILE" > "$TMP" 2>/dev/null && mv "$TMP" "$REGISTRY_FILE"
+        jq -s '.[0] | group_by(.id) | map(max_by(.last_seen))' \
+          "$REGISTRY_FILE" > "$TMP" 2>/dev/null && mv "$TMP" "$REGISTRY_FILE"
       fi
 
       # Update self and push
