@@ -290,22 +290,8 @@ echo ""
 # Fundamentals — always
 run_step "system"    "System Setup"           "01-system-setup.sh"
 run_step "docker"    "Docker Install"         "02-docker-install.sh"
-run_step "npm"       "Nginx Proxy Manager"    "03-npm-setup.sh"
-run_step "backup"    "Backup System"          "09-backup-setup.sh"
-run_step "helpers"   "Linux Helper Tools"     "10-linux-helper-setup.sh"
-run_step "security"  "Security Setup"         "12-security-setup.sh"
-run_step "terminal"  "Terminal Setup"         "14-terminal-setup.sh"
-run_step "console"   "Server Console"         "15-server-console-setup.sh"
 
-# Optional
-[[ "$CHOICES" =~ portainer  ]] && run_step "portainer"  "Portainer"          "05-portainer-setup.sh"
-[[ "$CHOICES" =~ cloudflare ]] && run_step "cloudflare" "Cloudflare Tunnel"  "04-cloudflared-setup.sh"
-[[ "$CHOICES" =~ monitoring ]] && run_step "monitoring" "Monitoring Stack"   "06-monitoring-setup.sh"
-[[ "$CHOICES" =~ claude     ]] && run_step "claude"     "Claude CLI"         "07-claude-cli-setup.sh"
-[[ "$CHOICES" =~ "n8n\|redis\|surrealdb\|minio\|adminer\|mailpit\|wikijs" ]] && \
-  run_step "extras" "Extras (n8n/Redis/etc)" "08-extras-setup.sh"
-[[ "$CHOICES" =~ ai         ]] && run_step "ai"         "AI Stack"           "16-ai-setup.sh"
-
+# ── Server Hub comes up FIRST — visible in browser before anything else installs
 # ── Step 5: Server Hub ──────────────────────────────────────────────────────────
 if step_done "hub"; then
   skipped "Server Hub"
@@ -353,19 +339,44 @@ ENDSVC
   sudo systemctl restart hub
   sleep 2
   if systemctl is-active --quiet hub; then
-    success "Hub running at http://$SERVER_IP:8765"
+    success "Hub running at http://$SERVER_IP:8765 — open it now to watch the rest of the install"
     mark_done "hub"
   else
     warn "Hub service failed — check: sudo journalctl -u hub -n 30"
   fi
 fi
 
-# Claude context
+# Claude context — fill in real server values
 if [[ -d "$INSTALL_DIR/claude" ]]; then
   mkdir -p "$HOME/.claude"
-  cp "$INSTALL_DIR/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md" 2>/dev/null && success "Claude context installed" || true
+  CLAUDE_DEST="$HOME/.claude/CLAUDE.md"
+  cp "$INSTALL_DIR/claude/CLAUDE.md" "$CLAUDE_DEST" 2>/dev/null || true
+  # Replace placeholders with real values from this install
+  sed -i "s/YOUR_HOSTNAME/$(hostname -s)/g" "$CLAUDE_DEST"
+  sed -i "s/YOUR_LOCAL_IP/$SERVER_IP/g" "$CLAUDE_DEST"
+  sed -i "s/YOUR_ADMIN_USER/$ADMIN_USER/g" "$CLAUDE_DEST"
+  TS_IP_CL=$(tailscale ip -4 2>/dev/null || echo "not-connected")
+  sed -i "s/YOUR_TAILSCALE_IP/$TS_IP_CL/g" "$CLAUDE_DEST"
+  success "Claude context installed with real server values"
   cp "$INSTALL_DIR/claude/mcp-servers.json" "$HOME/.claude/mcp_servers.json" 2>/dev/null || true
 fi
+
+# Rest of fundamentals — hub is already up, these install while you can watch
+run_step "npm"       "Nginx Proxy Manager"    "03-npm-setup.sh"
+run_step "backup"    "Backup System"          "09-backup-setup.sh"
+run_step "helpers"   "Linux Helper Tools"     "10-linux-helper-setup.sh"
+run_step "security"  "Security Setup"         "12-security-setup.sh"
+run_step "terminal"  "Terminal Setup"         "14-terminal-setup.sh"
+run_step "console"   "Server Console"         "15-server-console-setup.sh"
+
+# Optional services
+[[ "$CHOICES" =~ portainer  ]] && run_step "portainer"  "Portainer"          "05-portainer-setup.sh"
+[[ "$CHOICES" =~ cloudflare ]] && run_step "cloudflare" "Cloudflare Tunnel"  "04-cloudflared-setup.sh"
+[[ "$CHOICES" =~ monitoring ]] && run_step "monitoring" "Monitoring Stack"   "06-monitoring-setup.sh"
+[[ "$CHOICES" =~ claude     ]] && run_step "claude"     "Claude CLI"         "07-claude-cli-setup.sh"
+[[ "$CHOICES" =~ "n8n\|redis\|surrealdb\|minio\|adminer\|mailpit\|wikijs" ]] && \
+  run_step "extras" "Extras (n8n/Redis/etc)" "08-extras-setup.sh"
+[[ "$CHOICES" =~ ai         ]] && run_step "ai"         "AI Stack"           "16-ai-setup.sh"
 
 # ── Done ────────────────────────────────────────────────────────────────────────
 show_summary
