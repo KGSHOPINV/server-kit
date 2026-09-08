@@ -293,6 +293,18 @@ run_step "docker"    "Docker Install"         "02-docker-install.sh"
 # Give current session docker access without needing logout/login
 sudo chmod 666 /var/run/docker.sock 2>/dev/null || true
 
+# ── Storage setup — detect and mount raw drives if any exist ──────────────────
+RAW_COUNT=$(lsblk -dpno NAME,FSTYPE,TYPE | awk '$3=="disk" && $2==""' | wc -l)
+if [ "$RAW_COUNT" -gt 0 ]; then
+  if ! step_done "storage"; then
+    info "Raw unmounted drives found — running storage setup wizard..."
+    bash "$INSTALL_DIR/storage-setup.sh"
+    mark_done "storage"
+  else
+    skipped "Storage Setup"
+  fi
+fi
+
 # ── Server Hub comes up FIRST — visible in browser before anything else installs
 # ── Step 5: Server Hub ──────────────────────────────────────────────────────────
 if step_done "hub"; then
