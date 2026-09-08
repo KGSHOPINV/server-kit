@@ -1,21 +1,38 @@
+# =============================================================================
+# HOMEPAGE — Server dashboard showing all services, status, and quick links
+# =============================================================================
+# Port:        3000 (host) → web UI (main server dashboard)
+# Access:      http://YOUR_SERVER_IP:3000
+# Credentials: None — no login required by default
+# Data:        homepage-config volume → YAML config files (services.yaml, widgets.yaml, etc.)
+# Depends on:  proxy network must exist (created by npm compose)
+# Start:       cd /srv/docker/homepage && docker compose up -d
+# Stop:        cd /srv/docker/homepage && docker compose down
+# Logs:        cd /srv/docker/homepage && docker compose logs -f
+# Update:      cd /srv/docker/homepage && docker compose pull && docker compose up -d
+# Note:        Edit config files inside the homepage-config volume to add/remove services.
+#              The Docker socket (read-only) lets Homepage show container status automatically.
+#              HOMEPAGE_ALLOWED_HOSTS=* permits access from any hostname — restrict if needed.
+# =============================================================================
+
 services:
   homepage:
-    image: ghcr.io/gethomepage/homepage:latest
+    image: ghcr.io/gethomepage/homepage:latest  # official Homepage image (GitHub Container Registry)
     container_name: homepage
-    restart: always
+    restart: always                             # auto-restarts on crash or reboot
     ports:
-      - "3000:3000"
+      - "3000:3000"                             # 3000 host → 3000 container (web UI)
     volumes:
-      - homepage-config:/app/config
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - homepage-config:/app/config             # persists YAML service/widget config files
+      - /var/run/docker.sock:/var/run/docker.sock:ro  # read-only Docker socket — auto-detects running containers
     environment:
-      - HOMEPAGE_ALLOWED_HOSTS=*
+      - HOMEPAGE_ALLOWED_HOSTS=*                # allows access from any hostname or IP — tighten if exposing publicly
     networks:
-      - proxy
+      - proxy                                   # must exist — created by npm compose (03-npm-setup.sh)
 
 volumes:
-  homepage-config:
+  homepage-config:    # stores Homepage YAML config: services.yaml, widgets.yaml, bookmarks.yaml, settings.yaml
 
 networks:
   proxy:
-    external: true
+    external: true    # must exist — created by npm compose (03-npm-setup.sh)

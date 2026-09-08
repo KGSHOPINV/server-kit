@@ -1,19 +1,38 @@
+# =============================================================================
+# MAILPIT — Development email catcher (SMTP trap + web inbox viewer)
+# =============================================================================
+# Port:        8025 (host) → web UI (browse captured emails in the browser)
+#              1025 (host) → SMTP server (apps send email here instead of a real server)
+# Access:      http://YOUR_SERVER_IP:8025
+# Credentials: None — open by default (restrict if exposing beyond localhost)
+# Data:        mailpit-data volume → stored emails (SQLite database)
+# Depends on:  proxy network must exist (created by npm compose)
+# Start:       cd /srv/docker/mailpit && docker compose up -d
+# Stop:        cd /srv/docker/mailpit && docker compose down
+# Logs:        cd /srv/docker/mailpit && docker compose logs -f
+# Update:      cd /srv/docker/mailpit && docker compose pull && docker compose up -d
+# Note:        Point your app's SMTP settings to YOUR_SERVER_IP:1025 (no auth, no TLS).
+#              All outgoing emails are intercepted here — nothing reaches real recipients.
+#              Mailpit also provides a REST API at /api/v1 for automated testing.
+#              Replacement for MailHog (no longer maintained).
+# =============================================================================
+
 services:
   mailpit:
-    image: axllent/mailpit:latest
+    image: axllent/mailpit:latest           # official Mailpit image
     container_name: mailpit
-    restart: always
+    restart: always                         # auto-restarts on crash or reboot
     ports:
-      - "8025:8025"
-      - "1025:1025"
+      - "8025:8025"                         # 8025 host → 8025 container (web inbox UI)
+      - "1025:1025"                         # 1025 host → 1025 container (SMTP — point apps here)
     volumes:
-      - mailpit-data:/data
+      - mailpit-data:/data                  # persists captured emails (SQLite) at Docker volume mailpit-data
     networks:
-      - proxy
+      - proxy                               # must exist — created by npm compose (03-npm-setup.sh)
 
 volumes:
-  mailpit-data:
+  mailpit-data:    # stores captured email database (SQLite) — emails survive container restarts
 
 networks:
   proxy:
-    external: true
+    external: true    # must exist — created by npm compose (03-npm-setup.sh)

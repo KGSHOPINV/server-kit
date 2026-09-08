@@ -1,16 +1,34 @@
+# =============================================================================
+# LANGUAGETOOL — Self-hosted grammar and spell checking API
+# =============================================================================
+# Port:        8084 (host) → REST API (POST /v2/check to check text)
+# Access:      http://YOUR_SERVER_IP:8084
+# Credentials: None — open API, no authentication by default
+# Data:        No persistent data — stateless API service
+# Depends on:  proxy network must exist (created by npm compose)
+# Start:       cd /srv/docker/languagetool && docker compose up -d
+# Stop:        cd /srv/docker/languagetool && docker compose down
+# Logs:        cd /srv/docker/languagetool && docker compose logs -f
+# Update:      cd /srv/docker/languagetool && docker compose pull && docker compose up -d
+# Note:        LanguageTool checks grammar, style, and spelling for 25+ languages.
+#              Browser extensions (e.g. for Chrome/Firefox) can point to this server URL.
+#              Java heap is limited to 256MB min / 512MB max — increase if OOM errors appear.
+#              API docs: http://YOUR_SERVER_IP:8084/v2/languages  (lists supported languages)
+# =============================================================================
+
 services:
   languagetool:
-    image: erikvl87/languagetool:latest
+    image: erikvl87/languagetool:latest     # community image wrapping LanguageTool Java app
     container_name: languagetool
-    restart: always
+    restart: always                         # auto-restarts on crash or reboot
     ports:
-      - "8084:8010"
+      - "8084:8010"                         # 8084 host → 8010 container (HTTP REST API)
     environment:
-      - Java_Xms=256m
-      - Java_Xmx=512m
+      - Java_Xms=256m                       # Java initial heap size (minimum memory allocated at startup)
+      - Java_Xmx=512m                       # Java max heap size — increase if you see OutOfMemory errors
     networks:
-      - proxy
+      - proxy                               # must exist — created by npm compose (03-npm-setup.sh)
 
 networks:
   proxy:
-    external: true
+    external: true    # must exist — created by npm compose (03-npm-setup.sh)

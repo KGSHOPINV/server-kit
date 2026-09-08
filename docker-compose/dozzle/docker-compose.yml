@@ -1,15 +1,31 @@
+# =============================================================================
+# DOZZLE — Real-time Docker container log viewer in the browser
+# =============================================================================
+# Port:        8090 (host) → web UI (stream and search container logs live)
+# Access:      http://YOUR_SERVER_IP:8090
+# Credentials: None by default — no login required (consider putting behind NPM auth)
+# Data:        No persistent data — reads live from Docker socket, nothing stored
+# Depends on:  proxy network must exist (created by npm compose)
+# Start:       cd /srv/docker/dozzle && docker compose up -d
+# Stop:        cd /srv/docker/dozzle && docker compose down
+# Logs:        cd /srv/docker/dozzle && docker compose logs -f
+# Update:      cd /srv/docker/dozzle && docker compose pull && docker compose up -d
+# Note:        Read-only access to Docker socket — Dozzle cannot start/stop containers.
+#              All containers on this host are visible in the UI automatically.
+# =============================================================================
+
 services:
   dozzle:
-    image: amir20/dozzle:latest
+    image: amir20/dozzle:latest             # official Dozzle image
     container_name: dozzle
-    restart: always
+    restart: always                         # auto-restarts on crash or reboot
     ports:
-      - "8090:8080"
+      - "8090:8080"                         # 8090 host → 8080 container (web UI)
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro  # read-only Docker socket — lists containers and streams logs
     networks:
-      - proxy
+      - proxy                               # must exist — created by npm compose (03-npm-setup.sh)
 
 networks:
   proxy:
-    external: true
+    external: true    # must exist — created by npm compose (03-npm-setup.sh)

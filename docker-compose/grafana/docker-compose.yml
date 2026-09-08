@@ -1,22 +1,40 @@
+# =============================================================================
+# GRAFANA — Metrics visualization and dashboards
+# =============================================================================
+# Port:        3002 (host) → web UI (dashboards, graphs, alerts)
+# Access:      http://YOUR_SERVER_IP:3002
+# Credentials: admin / admin — CHANGE THIS on first login
+# Data:        grafana-data volume → dashboards, data source configs, user settings
+# Depends on:  proxy network must exist (created by npm compose)
+#              Typically paired with Prometheus or other data sources (not included here)
+# Start:       cd /srv/docker/grafana && docker compose up -d
+# Stop:        cd /srv/docker/grafana && docker compose down
+# Logs:        cd /srv/docker/grafana && docker compose logs -f
+# Update:      cd /srv/docker/grafana && docker compose pull && docker compose up -d
+# Note:        Grafana is a visualization layer — it needs a data source (Prometheus,
+#              InfluxDB, PostgreSQL, etc.) configured to show meaningful graphs.
+#              The grafana-clock-panel plugin is pre-installed.
+# =============================================================================
+
 services:
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:latest           # official Grafana OSS image
     container_name: grafana
-    restart: always
+    restart: always                         # auto-restarts on crash or reboot
     ports:
-      - "3002:3000"
+      - "3002:3000"                         # 3002 host → 3000 container (web UI)
     environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-      - GF_INSTALL_PLUGINS=grafana-clock-panel
+      - GF_SECURITY_ADMIN_USER=admin        # admin username — CHANGE THIS
+      - GF_SECURITY_ADMIN_PASSWORD=admin    # admin password — CHANGE THIS (or set GF_SECURITY_ADMIN_PASSWORD in .env)
+      - GF_INSTALL_PLUGINS=grafana-clock-panel  # comma-separated list of plugins to install at startup
     volumes:
-      - grafana-data:/var/lib/grafana
+      - grafana-data:/var/lib/grafana       # persists dashboards, data sources, users, and settings
     networks:
-      - proxy
+      - proxy                               # must exist — created by npm compose (03-npm-setup.sh)
 
 volumes:
-  grafana-data:
+  grafana-data:    # stores all Grafana configuration, dashboards, and user data
 
 networks:
   proxy:
-    external: true
+    external: true    # must exist — created by npm compose (03-npm-setup.sh)

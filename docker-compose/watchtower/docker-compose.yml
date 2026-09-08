@@ -1,18 +1,35 @@
+# =============================================================================
+# WATCHTOWER — Automatically updates all running Docker containers
+# =============================================================================
+# Port:        None — runs as a background daemon, no web UI
+# Access:      No UI — check logs to see what was updated
+# Credentials: None required
+# Data:        No persistent data — reads Docker socket to detect and pull updates
+# Depends on:  proxy network must exist (created by npm compose)
+# Start:       cd /srv/docker/watchtower && docker compose up -d
+# Stop:        cd /srv/docker/watchtower && docker compose down
+# Logs:        cd /srv/docker/watchtower && docker compose logs -f
+# Update:      cd /srv/docker/watchtower && docker compose pull && docker compose up -d
+# Schedule:    Runs container updates daily at 4:00 AM (cron: 0 0 4 * * *)
+# Note:        Watchtower pulls the latest image for every running container and
+#              restarts it with the same settings. Old images are cleaned up automatically.
+# =============================================================================
+
 services:
   # Watchtower - auto-updates Docker containers
   watchtower:
-    image: containrrr/watchtower:latest
+    image: containrrr/watchtower:latest     # official Watchtower image
     container_name: watchtower
-    restart: always
+    restart: always                         # auto-restarts on crash or reboot
     environment:
-      - WATCHTOWER_CLEANUP=true
-      - WATCHTOWER_SCHEDULE=0 0 4 * * *
-      - WATCHTOWER_INCLUDE_STOPPED=false
+      - WATCHTOWER_CLEANUP=true             # removes old images after updating (saves disk space)
+      - WATCHTOWER_SCHEDULE=0 0 4 * * *    # cron schedule — runs at 4:00 AM every day
+      - WATCHTOWER_INCLUDE_STOPPED=false    # only updates currently running containers
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock  # gives Watchtower access to Docker daemon
     networks:
-      - proxy
+      - proxy                               # must exist — created by npm compose (03-npm-setup.sh)
 
 networks:
   proxy:
-    external: true
+    external: true    # must exist — created by npm compose (03-npm-setup.sh)

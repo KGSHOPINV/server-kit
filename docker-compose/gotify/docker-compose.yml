@@ -1,18 +1,36 @@
+# =============================================================================
+# GOTIFY — Self-hosted push notification server
+# =============================================================================
+# Port:        8086 (host) → web UI and REST API
+# Access:      http://YOUR_SERVER_IP:8086
+# Credentials: admin / admin (set on first login) — CHANGE THIS immediately
+# Data:        gotify-data volume → app database (users, tokens, messages, apps)
+# Depends on:  proxy network must exist (created by npm compose)
+# Start:       cd /srv/docker/gotify && docker compose up -d
+# Stop:        cd /srv/docker/gotify && docker compose down
+# Logs:        cd /srv/docker/gotify && docker compose logs -f
+# Update:      cd /srv/docker/gotify && docker compose pull && docker compose up -d
+# Note:        Gotify lets you send notifications to any device via REST API.
+#              Create an app token, then POST to /message to send a notification.
+#              Mobile apps available for Android (official) and iOS (third-party).
+#              Similar alternative: ntfy (simpler, no login required to subscribe)
+# =============================================================================
+
 services:
   gotify:
-    image: gotify/server:latest
+    image: gotify/server:latest             # official Gotify server image
     container_name: gotify
-    restart: always
+    restart: always                         # auto-restarts on crash or reboot
     ports:
-      - "8086:80"
+      - "8086:80"                           # 8086 host → 80 container (web UI + API)
     volumes:
-      - gotify-data:/app/data
+      - gotify-data:/app/data               # persists app database (users, tokens, messages) at Docker volume gotify-data
     networks:
-      - proxy
+      - proxy                               # must exist — created by npm compose (03-npm-setup.sh)
 
 volumes:
-  gotify-data:
+  gotify-data:    # stores Gotify's SQLite database and config
 
 networks:
   proxy:
-    external: true
+    external: true    # must exist — created by npm compose (03-npm-setup.sh)

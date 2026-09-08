@@ -1,19 +1,37 @@
+# =============================================================================
+# ADMINER — Lightweight web-based database browser and query tool
+# =============================================================================
+# Port:        8083 (host) → web UI (browse tables, run SQL, export data)
+# Access:      http://YOUR_SERVER_IP:8083
+# Credentials: set in the login form — use postgres / your POSTGRES_PASSWORD
+#              Default server auto-filled as: supabase-db
+# Data:        No persistent data — stateless UI, all data lives in the DB
+# Depends on:  supabase stack must be running (supabase-net network)
+#              proxy network must exist (created by npm compose)
+# Start:       cd /srv/docker/adminer && docker compose up -d
+# Stop:        cd /srv/docker/adminer && docker compose down
+# Logs:        cd /srv/docker/adminer && docker compose logs -f
+# Update:      cd /srv/docker/adminer && docker compose pull && docker compose up -d
+# Note:        Adminer can connect to any DB — Postgres, MySQL, SQLite, etc.
+#              Default design is "dracula" (dark theme)
+# =============================================================================
+
 services:
   adminer:
-    image: adminer:latest
+    image: adminer:latest                   # official Adminer image (lightweight PHP DB UI)
     container_name: adminer
-    restart: always
+    restart: always                         # auto-restarts on crash or reboot
     ports:
-      - "8083:8080"
+      - "8083:8080"                         # 8083 host → 8080 container (web UI)
     environment:
-      ADMINER_DEFAULT_SERVER: supabase-db
-      ADMINER_DESIGN: dracula
+      ADMINER_DEFAULT_SERVER: supabase-db   # pre-fills the server field in the login form
+      ADMINER_DESIGN: dracula               # sets the dark "dracula" UI theme
     networks:
-      - proxy
-      - supabase-net
+      - proxy                               # must exist — created by npm compose (03-npm-setup.sh)
+      - supabase-net                        # must exist — created by supabase compose; needed to reach supabase-db
 
 networks:
   proxy:
-    external: true
+    external: true    # must exist — created by npm compose (03-npm-setup.sh)
   supabase-net:
-    external: true
+    external: true    # must exist — created by supabase compose; Adminer reaches the DB through this
