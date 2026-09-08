@@ -61,10 +61,41 @@ if [[ "$install_supa" == "y" ]]; then
   SUPA_DIR="/srv/docker/supabase"
   mkdir -p "$SUPA_DIR"
   cp "$SCRIPT_DIR/docker-compose/supabase/docker-compose.yml" "$SUPA_DIR/"
-  cp "$SCRIPT_DIR/docker-compose/supabase/.env.example" "$SUPA_DIR/.env"
-  echo ""
-  echo "  IMPORTANT: Edit /srv/docker/supabase/.env before starting!"
-  echo "  Change: POSTGRES_PASSWORD, JWT_SECRET, ANON_KEY, SERVICE_ROLE_KEY"
+  cp "$SCRIPT_DIR/docker-compose/supabase/kong.yml" "$SUPA_DIR/"
+
+  # Generate Supabase secrets if .env doesn't exist
+  if [ ! -f "$SUPA_DIR/.env" ]; then
+    JWT_SECRET=$(openssl rand -base64 32)
+    ANON_KEY=$(python3 -c "
+import base64, json, hmac, hashlib, time
+secret = b'$JWT_SECRET'
+header = base64.urlsafe_b64encode(json.dumps({'alg':'HS256','typ':'JWT'}).encode()).rstrip(b'=').decode()
+payload = base64.urlsafe_b64encode(json.dumps({'role':'anon','iss':'supabase','iat':int(time.time()),'exp':int(time.time())+315360000}).encode()).rstrip(b'=').decode()
+sig = base64.urlsafe_b64encode(hmac.new(secret, f'{header}.{payload}'.encode(), hashlib.sha256).digest()).rstrip(b'=').decode()
+print(f'{header}.{payload}.{sig}')
+" 2>/dev/null || openssl rand -base64 48 | tr -d '=+/' | head -c 64)
+    SERVICE_KEY=$(python3 -c "
+import base64, json, hmac, hashlib, time
+secret = b'$JWT_SECRET'
+header = base64.urlsafe_b64encode(json.dumps({'alg':'HS256','typ':'JWT'}).encode()).rstrip(b'=').decode()
+payload = base64.urlsafe_b64encode(json.dumps({'role':'service_role','iss':'supabase','iat':int(time.time()),'exp':int(time.time())+315360000}).encode()).rstrip(b'=').decode()
+sig = base64.urlsafe_b64encode(hmac.new(secret, f'{header}.{payload}'.encode(), hashlib.sha256).digest()).rstrip(b'=').decode()
+print(f'{header}.{payload}.{sig}')
+" 2>/dev/null || openssl rand -base64 48 | tr -d '=+/' | head -c 64)
+    POSTGRES_PASS=$(openssl rand -base64 24 | tr -d '=+/')
+
+    cat > "$SUPA_DIR/.env" << EOF
+POSTGRES_PASSWORD=$POSTGRES_PASS
+JWT_SECRET=$JWT_SECRET
+ANON_KEY=$ANON_KEY
+SERVICE_ROLE_KEY=$SERVICE_KEY
+API_EXTERNAL_URL=http://localhost:8000
+SITE_URL=http://localhost:3000
+EOF
+    echo "  ✓ Generated Supabase secrets → $SUPA_DIR/.env"
+    echo "  ! Save these — they cannot be regenerated without resetting the database"
+  fi
+
   echo ""
   read -p "  Start Supabase now? (y/n): " start_supa
   if [[ "$start_supa" == "y" ]]; then

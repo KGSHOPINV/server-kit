@@ -28,6 +28,7 @@ sudo cp "$SCRIPT_DIR/tools/server-list.sh" /usr/local/bin/kit-servers
 sudo cp "$SCRIPT_DIR/tools/server-sync.sh" /usr/local/bin/kit-sync
 sudo cp "$SCRIPT_DIR/tools/network-check.sh" /usr/local/bin/network-check
 sudo cp "$SCRIPT_DIR/tools/deploy-project.sh" /usr/local/bin/deploy-project
+sudo cp "$SCRIPT_DIR/tools/ai-models.sh" /usr/local/bin/ai-models
 
 sudo chmod +x /usr/local/bin/server-menu
 sudo chmod +x /usr/local/bin/port-scan
@@ -43,6 +44,7 @@ sudo chmod +x /usr/local/bin/kit-servers
 sudo chmod +x /usr/local/bin/kit-sync
 sudo chmod +x /usr/local/bin/network-check
 sudo chmod +x /usr/local/bin/deploy-project
+sudo chmod +x /usr/local/bin/ai-models
 
 # --- Bash aliases ---
 echo ""

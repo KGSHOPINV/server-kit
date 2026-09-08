@@ -73,6 +73,7 @@ TOOLS=(
   "server-list.sh:kit-servers"
   "server-sync.sh:kit-sync"
   "network-check.sh:network-check"
+  "ai-models.sh:ai-models"
 )
 
 for tool in "${TOOLS[@]}"; do
