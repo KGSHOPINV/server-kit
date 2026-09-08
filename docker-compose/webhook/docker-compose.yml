@@ -1,19 +1,45 @@
+# =============================================================================
+# WEBHOOK — HTTP webhook receiver that triggers shell scripts
+# =============================================================================
+# Port:        9002 (host) → HTTP API (POST to trigger defined hooks)
+# Access:      http://YOUR_SERVER_IP:9002/hooks/HOOK_ID  (call a specific hook)
+# Credentials: None by default — hooks can be secured with secret tokens in hooks.json
+# Data:        No persistent volume — hooks config is in ./hooks.json (bind mount)
+#              Scripts live in ./scripts/ (bind mount)
+# Depends on:  proxy network must exist (created by npm compose)
+#              hooks.json must exist in the same directory as this compose file
+#              scripts/ directory must exist in the same directory
+# Start:       cd /srv/docker/webhook && docker compose up -d
+# Stop:        cd /srv/docker/webhook && docker compose down
+# Logs:        cd /srv/docker/webhook && docker compose logs -f
+# Update:      cd /srv/docker/webhook && docker compose pull && docker compose up -d
+# Note:        Edit hooks.json to define what each hook does (which script to run,
+#              what HTTP method to accept, optional secret token validation).
+#              -hotreload flag means hooks.json changes take effect without restarting.
+#              -verbose flag logs all incoming requests (useful for debugging).
+#              Docker socket + /srv/docker mount allow scripts to manage containers.
+#              Example: POST to /hooks/deploy triggers a redeploy script.
+# =============================================================================
+
 services:
   webhook:
-    image: almir/webhook:latest
+    image: almir/webhook:latest             # lightweight webhook server image
     container_name: webhook
-    restart: always
+    restart: always                         # auto-restarts on crash or reboot
     ports:
-      - "9002:9000"
+      - "9002:9000"                         # 9002 host → 9000 container (HTTP webhook API)
     volumes:
-      - ./hooks.json:/etc/webhook/hooks.json
-      - ./scripts:/scripts
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /srv/docker:/srv/docker
+      - ./hooks.json:/etc/webhook/hooks.json  # hook definitions — edit this file to configure triggers
+      - ./scripts:/scripts                    # shell scripts that hooks execute (one script per hook action)
+      - /var/run/docker.sock:/var/run/docker.sock  # allows scripts to run Docker commands
+      - /srv/docker:/srv/docker               # allows scripts to manage service directories
     command: -verbose -hooks=/etc/webhook/hooks.json -hotreload
+    # ↑ -verbose    → logs all incoming requests (remove for quieter logs)
+    #   -hooks=...  → path to the hooks config file
+    #   -hotreload  → watches hooks.json for changes and reloads without restart
     networks:
-      - proxy
+      - proxy                               # must exist — created by npm compose (03-npm-setup.sh)
 
 networks:
   proxy:
-    external: true
+    external: true    # must exist — created by npm compose (03-npm-setup.sh)

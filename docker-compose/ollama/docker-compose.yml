@@ -1,12 +1,31 @@
+# =============================================================================
+# OLLAMA — Local AI model engine (runs LLMs entirely on your server)
+# =============================================================================
+# Port:        11434 (host) → REST API (OpenAI-compatible — pull models, run inference)
+# Access:      http://YOUR_SERVER_IP:11434  (API only — no web UI; use Open WebUI for UI)
+# Credentials: None — open API by default
+# Data:        ollama-data volume → downloaded AI model files (can be very large, 2–70+ GB)
+# Depends on:  proxy network must exist (created by npm compose)
+# Start:       cd /srv/docker/ollama && docker compose up -d
+# Stop:        cd /srv/docker/ollama && docker compose down
+# Logs:        cd /srv/docker/ollama && docker compose logs -f
+# Update:      cd /srv/docker/ollama && docker compose pull && docker compose up -d
+# WARNING:     No GPU installed on this server — all inference runs on CPU.
+#              CPU-only inference is very slow. Only start when actively using.
+#              To pull a model: docker exec -it ollama ollama pull llama3.2
+#              To list models: docker exec -it ollama ollama list
+# GPU NOTE:    To enable NVIDIA GPU, uncomment the "deploy" block below.
+# =============================================================================
+
 services:
   ollama:
-    image: ollama/ollama:latest
+    image: ollama/ollama:latest             # official Ollama image
     container_name: ollama
-    restart: always
+    restart: always                         # auto-restarts on crash or reboot
     ports:
-      - "11434:11434"
+      - "11434:11434"                       # 11434 host → 11434 container (OpenAI-compatible REST API)
     volumes:
-      - ollama-data:/root/.ollama
+      - ollama-data:/root/.ollama           # persists downloaded AI model files (can be many GB)
     # Uncomment below if you have an NVIDIA GPU
     # deploy:
     #   resources:
@@ -16,11 +35,11 @@ services:
     #           count: all
     #           capabilities: [gpu]
     networks:
-      - proxy
+      - proxy                               # must exist — created by npm compose (03-npm-setup.sh)
 
 volumes:
-  ollama-data:
+  ollama-data:    # stores all downloaded Ollama model files — can grow very large
 
 networks:
   proxy:
-    external: true
+    external: true    # must exist — created by npm compose (03-npm-setup.sh)

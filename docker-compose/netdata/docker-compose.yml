@@ -1,30 +1,49 @@
+# =============================================================================
+# NETDATA — Real-time system and container performance monitoring
+# =============================================================================
+# Port:        19999 (host) → web UI (live CPU, RAM, disk, network, container graphs)
+# Access:      http://YOUR_SERVER_IP:19999
+# Credentials: None — open by default (consider putting behind NPM auth if exposed)
+# Data:        netdata-config volume → custom config and alerts
+#              netdata-lib volume     → internal state and metric retention
+#              netdata-cache volume   → cached metric data for the dashboard
+# Depends on:  proxy network must exist (created by npm compose)
+# Start:       cd /srv/docker/netdata && docker compose up -d
+# Stop:        cd /srv/docker/netdata && docker compose down
+# Logs:        cd /srv/docker/netdata && docker compose logs -f
+# Update:      cd /srv/docker/netdata && docker compose pull && docker compose up -d
+# Note:        Needs elevated Linux capabilities (SYS_PTRACE, SYS_ADMIN) and apparmor:unconfined
+#              to read kernel metrics, /proc, /sys, and Docker socket.
+#              Host /proc and /sys are mounted read-only so Netdata sees real system metrics.
+# =============================================================================
+
 services:
   netdata:
-    image: netdata/netdata:latest
+    image: netdata/netdata:latest           # official Netdata image
     container_name: netdata
-    restart: always
+    restart: always                         # auto-restarts on crash or reboot
     ports:
-      - "19999:19999"
+      - "19999:19999"                       # 19999 host → 19999 container (web dashboard)
     cap_add:
-      - SYS_PTRACE
-      - SYS_ADMIN
+      - SYS_PTRACE                          # allows Netdata to trace processes for per-app metrics
+      - SYS_ADMIN                           # required to read certain kernel and cgroup metrics
     security_opt:
-      - apparmor:unconfined
+      - apparmor:unconfined                 # disables AppArmor confinement — needed for deep system access
     volumes:
-      - netdata-config:/etc/netdata
-      - netdata-lib:/var/lib/netdata
-      - netdata-cache:/var/cache/netdata
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - netdata-config:/etc/netdata         # persists custom alarm configs and netdata.conf edits
+      - netdata-lib:/var/lib/netdata        # persists internal Netdata state and retention metadata
+      - netdata-cache:/var/cache/netdata    # persists cached metrics (speeds up dashboard reload)
+      - /proc:/host/proc:ro                 # read-only host /proc — Netdata reads real kernel metrics here
+      - /sys:/host/sys:ro                   # read-only host /sys — Netdata reads hardware/kernel stats here
+      - /var/run/docker.sock:/var/run/docker.sock:ro  # read-only Docker socket — monitors container metrics
     networks:
-      - proxy
+      - proxy                               # must exist — created by npm compose (03-npm-setup.sh)
 
 volumes:
-  netdata-config:
-  netdata-lib:
-  netdata-cache:
+  netdata-config:    # custom Netdata configuration and alert definitions
+  netdata-lib:       # Netdata internal state and metric metadata
+  netdata-cache:     # cached dashboard data (can be deleted safely — will rebuild)
 
 networks:
   proxy:
-    external: true
+    external: true    # must exist — created by npm compose (03-npm-setup.sh)

@@ -1,19 +1,42 @@
+# =============================================================================
+# SURREALDB — Multi-model database (SQL + graph + document + key-value in one)
+# =============================================================================
+# Port:        8001 (host) → HTTP/WebSocket API (query with SQL, GraphQL, or WebSocket)
+# Access:      http://YOUR_SERVER_IP:8001  (API endpoint)
+#              Use Surrealist (desktop app) or curl to interact with the database
+# Credentials: root / root — CHANGE THESE (set via --user and --pass in the command below)
+# Data:        surrealdb-data volume → database file at /data/srdb.db
+# Depends on:  proxy network must exist (created by npm compose)
+# Start:       cd /srv/docker/surrealdb && docker compose up -d
+# Stop:        cd /srv/docker/surrealdb && docker compose down
+# Logs:        cd /srv/docker/surrealdb && docker compose logs -f
+# Update:      cd /srv/docker/surrealdb && docker compose pull && docker compose up -d
+# Note:        SurrealDB supports SQL-like syntax, record links (graph), nested objects,
+#              and real-time live queries over WebSocket.
+#              To connect with CLI: docker exec -it surrealdb surreal sql --endpoint http://localhost:8000 --user root --pass root --ns test --db test
+#              For production: change --user and --pass in the command field below.
+# =============================================================================
+
 services:
   surrealdb:
-    image: surrealdb/surrealdb:latest
+    image: surrealdb/surrealdb:latest       # official SurrealDB image
     container_name: surrealdb
-    restart: always
+    restart: always                         # auto-restarts on crash or reboot
     ports:
-      - "8001:8000"
+      - "8001:8000"                         # 8001 host → 8000 container (HTTP + WebSocket API)
     command: start --user root --pass root file:/data/srdb.db
+    # ↑ starts SurrealDB with:
+    #   --user root   → root username — CHANGE THIS for production
+    #   --pass root   → root password — CHANGE THIS for production
+    #   file:/data/srdb.db → persist data to a file inside the container (mapped to volume below)
     volumes:
-      - surrealdb-data:/data
+      - surrealdb-data:/data                # persists database file at /data/srdb.db
     networks:
-      - proxy
+      - proxy                               # must exist — created by npm compose (03-npm-setup.sh)
 
 volumes:
-  surrealdb-data:
+  surrealdb-data:    # stores the SurrealDB database file (srdb.db) — back this up regularly
 
 networks:
   proxy:
-    external: true
+    external: true    # must exist — created by npm compose (03-npm-setup.sh)

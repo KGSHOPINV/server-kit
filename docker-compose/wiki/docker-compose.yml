@@ -1,21 +1,39 @@
+# =============================================================================
+# WIKI.JS — Self-hosted knowledge base and documentation wiki
+# =============================================================================
+# Port:        3003 (host) → web UI (create and browse wiki pages)
+# Access:      http://YOUR_SERVER_IP:3003
+# Credentials: Set on first visit — create admin email and password — CHANGE from defaults
+# Data:        wiki-data volume → SQLite database at /data/wiki.sqlite (all pages and content)
+# Depends on:  proxy network must exist (created by npm compose)
+# Start:       cd /srv/docker/wiki && docker compose up -d
+# Stop:        cd /srv/docker/wiki && docker compose down
+# Logs:        cd /srv/docker/wiki && docker compose logs -f
+# Update:      cd /srv/docker/wiki && docker compose pull && docker compose up -d
+# Note:        This config uses SQLite (simplest setup — no separate DB container needed).
+#              For production with many users, switch DB_TYPE to postgres and add supabase-db.
+#              Wiki.js supports Markdown, WYSIWYG, code blocks, diagrams, and more.
+#              Content is stored in the SQLite file — back up wiki-data volume regularly.
+# =============================================================================
+
 services:
   wikijs:
-    image: ghcr.io/requarks/wiki:2
+    image: ghcr.io/requarks/wiki:2          # official Wiki.js v2 image (GitHub Container Registry)
     container_name: wikijs
-    restart: always
+    restart: always                         # auto-restarts on crash or reboot
     ports:
-      - "3003:3000"
+      - "3003:3000"                         # 3003 host → 3000 container (web UI)
     environment:
-      DB_TYPE: sqlite
-      DB_FILEPATH: /data/wiki.sqlite
+      DB_TYPE: sqlite                       # database backend — sqlite (built-in, no extra container needed)
+      DB_FILEPATH: /data/wiki.sqlite        # path inside the container where the SQLite file lives
     volumes:
-      - wiki-data:/data
+      - wiki-data:/data                     # persists wiki.sqlite (all pages and content) at Docker volume wiki-data
     networks:
-      - proxy
+      - proxy                               # must exist — created by npm compose (03-npm-setup.sh)
 
 volumes:
-  wiki-data:
+  wiki-data:    # stores the SQLite database file containing all wiki content — back this up
 
 networks:
   proxy:
-    external: true
+    external: true    # must exist — created by npm compose (03-npm-setup.sh)

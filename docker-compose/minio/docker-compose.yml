@@ -1,28 +1,49 @@
+# =============================================================================
+# MINIO — Self-hosted S3-compatible object storage
+# =============================================================================
+# Port:        9000 (host) → S3 API (compatible with AWS S3 SDKs and CLIs)
+#              9001 (host) → MinIO Console web UI (manage buckets, users, policies)
+# Access:      http://YOUR_SERVER_IP:9001  (web console)
+#              http://YOUR_SERVER_IP:9000  (S3 API endpoint for clients)
+# Credentials: minioadmin / minioadmin — CHANGE THESE (MINIO_ROOT_USER / MINIO_ROOT_PASSWORD)
+# Data:        minio-data volume → all uploaded objects (files, blobs, backups, etc.)
+# Depends on:  proxy network must exist (created by npm compose)
+# Start:       cd /srv/docker/minio && docker compose up -d
+# Stop:        cd /srv/docker/minio && docker compose down
+# Logs:        cd /srv/docker/minio && docker compose logs -f
+# Update:      cd /srv/docker/minio && docker compose pull && docker compose up -d
+# Note:        Point any S3-compatible client (AWS CLI, rclone, boto3, etc.) to
+#              http://YOUR_SERVER_IP:9000 with your MinIO credentials.
+#              Create buckets in the web console (port 9001) or via S3 API.
+#              Common use: store backups, media files, or serve Supabase storage.
+# =============================================================================
+
 services:
   minio:
-    image: minio/minio:latest
+    image: minio/minio:latest               # official MinIO image
     container_name: minio
-    restart: always
+    restart: always                         # auto-restarts on crash or reboot
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "9000:9000"                         # 9000 host → 9000 container (S3-compatible API)
+      - "9001:9001"                         # 9001 host → 9001 container (MinIO web console)
     command: server /data --console-address ":9001"
+    # ↑ starts MinIO server with data at /data, and binds the console UI to port 9001
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_ROOT_USER: minioadmin           # root/admin username — CHANGE THIS
+      MINIO_ROOT_PASSWORD: minioadmin       # root/admin password — CHANGE THIS (min 8 chars)
     volumes:
-      - minio-data:/data
+      - minio-data:/data                    # persists all bucket data (uploaded objects)
     networks:
-      - proxy
+      - proxy                               # must exist — created by npm compose (03-npm-setup.sh)
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]  # liveness probe
       interval: 30s
       timeout: 20s
       retries: 3
 
 volumes:
-  minio-data:
+  minio-data:    # stores all MinIO object data — back this up regularly if used for important files
 
 networks:
   proxy:
-    external: true
+    external: true    # must exist — created by npm compose (03-npm-setup.sh)

@@ -1,18 +1,35 @@
+# =============================================================================
+# UPTIME KUMA — Uptime monitoring with alerts for all your services
+# =============================================================================
+# Port:        3001 (host) → web UI (add monitors, view status, configure alerts)
+# Access:      http://YOUR_SERVER_IP:3001
+# Credentials: Set on first visit — create admin username and password — CHANGE from defaults
+# Data:        kuma-data volume → monitor config, status history, alert settings (SQLite)
+# Depends on:  proxy network must exist (created by npm compose)
+# Start:       cd /srv/docker/monitoring && docker compose up -d
+# Stop:        cd /srv/docker/monitoring && docker compose down
+# Logs:        cd /srv/docker/monitoring && docker compose logs -f
+# Update:      cd /srv/docker/monitoring && docker compose pull && docker compose up -d
+# Note:        Uptime Kuma monitors HTTP(S), TCP, ping, DNS, and more.
+#              Supports notifications via Telegram, Slack, Discord, email, ntfy, Gotify, etc.
+#              Status pages can be made public to share service health with others.
+# =============================================================================
+
 services:
   uptime-kuma:
-    image: louislam/uptime-kuma:latest
+    image: louislam/uptime-kuma:latest      # official Uptime Kuma image
     container_name: uptime-kuma
-    restart: always
+    restart: always                         # auto-restarts on crash or reboot
     ports:
-      - "3001:3001"
+      - "3001:3001"                         # 3001 host → 3001 container (web UI)
     volumes:
-      - kuma-data:/app/data
+      - kuma-data:/app/data                 # persists all monitor configs, status history, and alert settings
     networks:
-      - proxy
+      - proxy                               # must exist — created by npm compose (03-npm-setup.sh)
 
 volumes:
-  kuma-data:
+  kuma-data:    # stores Uptime Kuma's SQLite database — all monitors and history live here
 
 networks:
   proxy:
-    external: true
+    external: true    # must exist — created by npm compose (03-npm-setup.sh)

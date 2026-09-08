@@ -1,113 +1,141 @@
+# =============================================================================
+# SUPABASE — Open-source Firebase alternative (Postgres + Auth + REST API + Studio)
+# =============================================================================
+# Port:        8000 (host) → Supabase Studio web UI (table editor, SQL editor, auth manager)
+#              5432 (host) → PostgreSQL direct connection (use with any DB client)
+#              8100 (host) → Kong API gateway (routes REST, Auth, and storage requests)
+# Access:      http://YOUR_SERVER_IP:8000  (Studio UI)
+#              postgres://postgres:PASSWORD@YOUR_SERVER_IP:5432/supabase  (DB direct)
+# Credentials: POSTGRES_PASSWORD — set in .env file — CHANGE THIS
+#              JWT_SECRET        — set in .env file — use a long random string — CHANGE THIS
+#              ANON_KEY          — set in .env file — public API key (generated from JWT_SECRET)
+#              SERVICE_ROLE_KEY  — set in .env file — privileged API key (generated from JWT_SECRET)
+# Data:        supabase-db-data volume → all PostgreSQL database files
+# Depends on:  Nothing — self-contained stack with its own internal network (supabase-net)
+#              Create a .env file with POSTGRES_PASSWORD, JWT_SECRET, ANON_KEY, SERVICE_ROLE_KEY
+# Start:       cd /srv/docker/supabase && docker compose up -d
+# Stop:        cd /srv/docker/supabase && docker compose down
+# Logs:        cd /srv/docker/supabase && docker compose logs -f
+# Update:      cd /srv/docker/supabase && docker compose pull && docker compose up -d
+# Note:        Supabase runs 6 containers internally:
+#              supabase-db   → PostgreSQL 15 database
+#              supabase-auth → GoTrue authentication service (JWT-based)
+#              supabase-rest → PostgREST (auto-generates REST API from DB schema)
+#              supabase-studio → Studio UI (the main dashboard you interact with)
+#              supabase-meta  → postgres-meta (metadata API used by Studio)
+#              supabase-kong  → Kong API gateway (routes all API traffic)
+# =============================================================================
+
 services:
   supabase-db:
-    image: supabase/postgres:15.6.1.143
+    image: supabase/postgres:15.6.1.143     # Supabase-customized PostgreSQL 15 with pg_cron, pg_net, etc.
     container_name: supabase-db
-    restart: always
+    restart: always                         # auto-restarts on crash or reboot
     ports:
-      - "5432:5432"
+      - "5432:5432"                         # 5432 host → 5432 container (PostgreSQL direct access)
     environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: supabase
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}  # database superuser password — set in .env — CHANGE THIS
+      POSTGRES_DB: supabase                    # default database name
     volumes:
-      - supabase-db-data:/var/lib/postgresql/data
+      - supabase-db-data:/var/lib/postgresql/data  # persists all PostgreSQL data files
     networks:
-      - supabase-net
+      - supabase-net                        # internal network connecting all Supabase services
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]  # waits until Postgres accepts connections
       interval: 10s
       timeout: 5s
       retries: 5
 
   supabase-auth:
-    image: supabase/gotrue:v2.158.1
+    image: supabase/gotrue:v2.158.1         # GoTrue authentication service (JWT, OAuth, magic links)
     container_name: supabase-auth
-    restart: always
+    restart: always                         # auto-restarts on crash or reboot
     depends_on:
       supabase-db:
-        condition: service_healthy
+        condition: service_healthy          # waits for Postgres to be ready before starting
     environment:
-      GOTRUE_API_HOST: "0.0.0.0"
-      GOTRUE_API_PORT: "9999"
-      API_EXTERNAL_URL: ${API_EXTERNAL_URL:-http://localhost:8000}
-      GOTRUE_DB_DRIVER: postgres
-      GOTRUE_DB_DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@supabase-db:5432/supabase?sslmode=disable
-      GOTRUE_SITE_URL: ${SITE_URL:-http://localhost:3000}
-      GOTRUE_JWT_SECRET: ${JWT_SECRET}
-      GOTRUE_JWT_EXP: "3600"
-      GOTRUE_DISABLE_SIGNUP: "false"
-      GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
-      GOTRUE_MAILER_AUTOCONFIRM: "true"
+      GOTRUE_API_HOST: "0.0.0.0"                                                           # listens on all interfaces
+      GOTRUE_API_PORT: "9999"                                                               # internal API port
+      API_EXTERNAL_URL: ${API_EXTERNAL_URL:-http://localhost:8000}                          # public URL of your Supabase instance — set in .env
+      GOTRUE_DB_DRIVER: postgres                                                            # uses PostgreSQL as the auth database
+      GOTRUE_DB_DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@supabase-db:5432/supabase?sslmode=disable  # DB connection string — uses POSTGRES_PASSWORD from .env
+      GOTRUE_SITE_URL: ${SITE_URL:-http://localhost:3000}                                   # your frontend URL — used in email links — set in .env
+      GOTRUE_JWT_SECRET: ${JWT_SECRET}                                                      # secret used to sign JWTs — CHANGE THIS — must match ANON/SERVICE keys
+      GOTRUE_JWT_EXP: "3600"                                                                # JWT expiry in seconds (1 hour)
+      GOTRUE_DISABLE_SIGNUP: "false"                                                        # set to "true" to disable new user signups
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"                                                 # allows email/password auth
+      GOTRUE_MAILER_AUTOCONFIRM: "true"                                                     # auto-confirms email addresses (no confirmation email needed)
     networks:
-      - supabase-net
+      - supabase-net                        # internal network
 
   supabase-rest:
-    image: postgrest/postgrest:v12.2.3
+    image: postgrest/postgrest:v12.2.3      # PostgREST — auto-generates REST API from PostgreSQL schema
     container_name: supabase-rest
-    restart: always
+    restart: always                         # auto-restarts on crash or reboot
     depends_on:
       supabase-db:
-        condition: service_healthy
+        condition: service_healthy          # waits for Postgres to be ready before starting
     environment:
-      PGRST_DB_URI: postgres://postgres:${POSTGRES_PASSWORD}@supabase-db:5432/supabase
-      PGRST_DB_SCHEMAS: "public,storage"
-      PGRST_DB_ANON_ROLE: anon
-      PGRST_JWT_SECRET: ${JWT_SECRET}
-      PGRST_DB_USE_LEGACY_GUCS: "false"
+      PGRST_DB_URI: postgres://postgres:${POSTGRES_PASSWORD}@supabase-db:5432/supabase  # DB connection — uses POSTGRES_PASSWORD from .env
+      PGRST_DB_SCHEMAS: "public,storage"   # which Postgres schemas to expose as REST endpoints
+      PGRST_DB_ANON_ROLE: anon             # Postgres role used for unauthenticated requests
+      PGRST_JWT_SECRET: ${JWT_SECRET}      # JWT secret for verifying request auth tokens — must match GOTRUE_JWT_SECRET
+      PGRST_DB_USE_LEGACY_GUCS: "false"    # use modern PostgreSQL GUC settings (recommended)
     networks:
-      - supabase-net
+      - supabase-net                        # internal network
 
   supabase-studio:
-    image: supabase/studio:20240923-88ee789
+    image: supabase/studio:20240923-88ee789  # Supabase Studio web UI
     container_name: supabase-studio
-    restart: always
+    restart: always                          # auto-restarts on crash or reboot
     ports:
-      - "8000:3000"
+      - "8000:3000"                          # 8000 host → 3000 container (Studio web UI)
     environment:
-      STUDIO_PG_META_URL: http://supabase-meta:8080
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      SUPABASE_URL: http://supabase-kong:8000
-      SUPABASE_ANON_KEY: ${ANON_KEY}
-      SUPABASE_SERVICE_KEY: ${SERVICE_ROLE_KEY}
+      STUDIO_PG_META_URL: http://supabase-meta:8080  # URL of the postgres-meta service (used for table introspection)
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}         # DB password passed to Studio — must match supabase-db
+      SUPABASE_URL: http://supabase-kong:8000         # internal URL of Kong gateway (Studio talks to API through this)
+      SUPABASE_ANON_KEY: ${ANON_KEY}                  # public anon API key — set in .env — CHANGE THIS
+      SUPABASE_SERVICE_KEY: ${SERVICE_ROLE_KEY}        # privileged service role key — set in .env — CHANGE THIS
     networks:
-      - supabase-net
+      - supabase-net                         # internal network
 
   supabase-meta:
-    image: supabase/postgres-meta:v0.83.2
+    image: supabase/postgres-meta:v0.83.2   # postgres-meta — exposes DB schema info to Studio
     container_name: supabase-meta
-    restart: always
+    restart: always                         # auto-restarts on crash or reboot
     depends_on:
       supabase-db:
-        condition: service_healthy
+        condition: service_healthy          # waits for Postgres to be ready before starting
     environment:
-      PG_META_PORT: "8080"
-      PG_META_DB_HOST: supabase-db
-      PG_META_DB_PORT: "5432"
-      PG_META_DB_NAME: supabase
-      PG_META_DB_USER: postgres
-      PG_META_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      PG_META_PORT: "8080"                  # internal port this service listens on
+      PG_META_DB_HOST: supabase-db          # hostname of the PostgreSQL container
+      PG_META_DB_PORT: "5432"               # PostgreSQL port
+      PG_META_DB_NAME: supabase             # database name to introspect
+      PG_META_DB_USER: postgres             # PostgreSQL user
+      PG_META_DB_PASSWORD: ${POSTGRES_PASSWORD}  # DB password — must match supabase-db — set in .env
     networks:
-      - supabase-net
+      - supabase-net                        # internal network
 
   supabase-kong:
-    image: kong:2.8.1
+    image: kong:2.8.1                       # Kong API gateway — routes all Supabase API requests
     container_name: supabase-kong
-    restart: always
+    restart: always                         # auto-restarts on crash or reboot
     ports:
-      - "8100:8000"
+      - "8100:8000"                         # 8100 host → 8000 container (Kong API gateway — REST/Auth endpoints)
     environment:
-      KONG_DATABASE: "off"
-      KONG_DECLARATIVE_CONFIG: /var/lib/kong/kong.yml
-      KONG_DNS_ORDER: LAST,A,CNAME
-      KONG_PLUGINS: request-transformer,cors,key-auth,acl
+      KONG_DATABASE: "off"                  # runs Kong in DB-less mode (config loaded from file)
+      KONG_DECLARATIVE_CONFIG: /var/lib/kong/kong.yml  # path to declarative config file (mounted below)
+      KONG_DNS_ORDER: LAST,A,CNAME          # DNS resolution order for upstream service discovery
+      KONG_PLUGINS: request-transformer,cors,key-auth,acl  # enabled Kong plugins
     volumes:
-      - ./kong.yml:/var/lib/kong/kong.yml:ro
+      - ./kong.yml:/var/lib/kong/kong.yml:ro  # read-only Kong routing config (maps paths to Supabase services)
     networks:
-      - supabase-net
+      - supabase-net                        # internal network
 
 volumes:
-  supabase-db-data:
+  supabase-db-data:    # persists all PostgreSQL database files — back this up regularly
 
 networks:
   supabase-net:
-    name: supabase-net
-    driver: bridge
+    name: supabase-net    # explicit name so adminer and other tools can join this network
+    driver: bridge        # standard bridge network — all Supabase containers communicate through this

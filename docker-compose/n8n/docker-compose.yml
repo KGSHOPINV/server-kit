@@ -1,25 +1,43 @@
+# =============================================================================
+# N8N — Visual workflow automation (connect APIs, trigger actions, build automations)
+# =============================================================================
+# Port:        5678 (host) → web UI (build and manage workflows)
+# Access:      http://YOUR_SERVER_IP:5678
+# Credentials: Set on first visit — create owner account — CHANGE from defaults
+# Data:        n8n-data volume → workflow definitions, credentials, execution history
+# Depends on:  proxy network must exist (created by npm compose)
+# Start:       cd /srv/docker/n8n && docker compose up -d
+# Stop:        cd /srv/docker/n8n && docker compose down
+# Logs:        cd /srv/docker/n8n && docker compose logs -f
+# Update:      cd /srv/docker/n8n && docker compose pull && docker compose up -d
+# REQUIRED:    Set N8N_ENCRYPTION_KEY in a .env file before first start.
+#              This key encrypts stored credentials — if lost, all saved credentials are unusable.
+#              Generate one: openssl rand -hex 32
+# =============================================================================
+
 services:
   n8n:
-    image: n8nio/n8n:latest
+    image: n8nio/n8n:latest                 # official n8n image
     container_name: n8n
-    restart: always
+    restart: always                         # auto-restarts on crash or reboot
     ports:
-      - "5678:5678"
+      - "5678:5678"                         # 5678 host → 5678 container (web UI and webhook receiver)
     environment:
-      - N8N_HOST=0.0.0.0
-      - N8N_PORT=5678
-      - N8N_PROTOCOL=http
-      - GENERIC_TIMEZONE=${TZ:-America/New_York}
+      - N8N_HOST=0.0.0.0                    # listens on all network interfaces inside the container
+      - N8N_PORT=5678                       # port n8n listens on inside the container
+      - N8N_PROTOCOL=http                   # set to "https" if using SSL termination at n8n level
+      - GENERIC_TIMEZONE=${TZ:-America/New_York}  # timezone for cron triggers and time displays — set TZ in .env
       # IMPORTANT: Set N8N_ENCRYPTION_KEY in your .env file
       - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY:-changeme-set-this-in-your-env}
+      # ↑ encrypts all stored credentials (API keys, passwords) — CHANGE THIS — generate with: openssl rand -hex 32
     volumes:
-      - n8n-data:/home/node/.n8n
+      - n8n-data:/home/node/.n8n            # persists workflows, credentials, and execution history
     networks:
-      - proxy
+      - proxy                               # must exist — created by npm compose (03-npm-setup.sh)
 
 volumes:
-  n8n-data:
+  n8n-data:    # stores all workflow definitions, credentials (encrypted), and execution logs
 
 networks:
   proxy:
-    external: true
+    external: true    # must exist — created by npm compose (03-npm-setup.sh)

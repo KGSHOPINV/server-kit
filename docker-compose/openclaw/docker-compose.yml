@@ -1,24 +1,43 @@
+# =============================================================================
+# OPENCLAW — AI playground and model testing interface
+# =============================================================================
+# Port:        3005 (host) → web UI (chat, test prompts, compare models)
+# Access:      http://YOUR_SERVER_IP:3005
+# Credentials: None by default (check OpenClaw docs for auth options)
+# Data:        openclaw-data volume → saved chats and settings
+# Depends on:  proxy network must exist (created by npm compose)
+#              Ollama must be running on port 11434 (for local models)
+# Start:       cd /srv/docker/openclaw && docker compose up -d
+# Stop:        cd /srv/docker/openclaw && docker compose down
+# Logs:        cd /srv/docker/openclaw && docker compose logs -f
+# Update:      cd /srv/docker/openclaw && docker compose pull && docker compose up -d
+# Note:        OpenClaw connects to Ollama for local model inference by default.
+#              To use cloud LLMs instead, uncomment one of the API key env vars below.
+#              Both Ollama and OpenClaw must be on the same Docker network to communicate.
+# WARNING:     CPU-only inference via Ollama is very slow without a GPU.
+# =============================================================================
+
 services:
   openclaw:
-    image: ghcr.io/psteinerdev/openclaw:latest
+    image: ghcr.io/psteinerdev/openclaw:latest  # OpenClaw image (GitHub Container Registry)
     container_name: openclaw
-    restart: always
+    restart: always                              # auto-restarts on crash or reboot
     ports:
-      - "3005:3000"
+      - "3005:3000"                              # 3005 host → 3000 container (web UI)
     environment:
-      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_HOST=http://ollama:11434           # points to the Ollama container on the proxy network
       # For cloud LLMs (optional, pick one):
-      # - OPENAI_API_KEY=your-key
-      # - ANTHROPIC_API_KEY=your-key
-      # - GOOGLE_API_KEY=your-key
+      # - OPENAI_API_KEY=your-key                # CHANGE THIS — enables OpenAI GPT models
+      # - ANTHROPIC_API_KEY=your-key             # CHANGE THIS — enables Anthropic Claude models
+      # - GOOGLE_API_KEY=your-key                # CHANGE THIS — enables Google Gemini models
     volumes:
-      - openclaw-data:/app/data
+      - openclaw-data:/app/data                  # persists saved chats and application settings
     networks:
-      - proxy
+      - proxy                                    # must exist — created by npm compose (03-npm-setup.sh)
 
 volumes:
-  openclaw-data:
+  openclaw-data:    # stores saved conversations and OpenClaw settings
 
 networks:
   proxy:
-    external: true
+    external: true    # must exist — created by npm compose (03-npm-setup.sh)

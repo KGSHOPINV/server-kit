@@ -1,23 +1,43 @@
+# =============================================================================
+# NTFY — Self-hosted push notification service (no account needed to subscribe)
+# =============================================================================
+# Port:        8085 (host) → web UI and REST API
+# Access:      http://YOUR_SERVER_IP:8085
+# Credentials: None by default — anyone can publish or subscribe to topics
+#              Add auth in /etc/ntfy/server.yml if you want access control
+# Data:        ntfy-cache volume → cached notifications (for offline delivery)
+#              ntfy-etc volume   → server config file (server.yml)
+# Depends on:  proxy network must exist (created by npm compose)
+# Start:       cd /srv/docker/ntfy && docker compose up -d
+# Stop:        cd /srv/docker/ntfy && docker compose down
+# Logs:        cd /srv/docker/ntfy && docker compose logs -f
+# Update:      cd /srv/docker/ntfy && docker compose pull && docker compose up -d
+# Note:        Send a notification: curl -d "Server is up!" http://YOUR_SERVER_IP:8085/my-topic
+#              Subscribe on phone: install ntfy app and add http://YOUR_SERVER_IP:8085 server.
+#              Topics are created automatically on first publish — no setup required.
+#              Simpler alternative to Gotify — no login needed to subscribe to topics.
+# =============================================================================
+
 services:
   ntfy:
-    image: binwiederhier/ntfy:latest
+    image: binwiederhier/ntfy:latest        # official ntfy image
     container_name: ntfy
-    restart: always
+    restart: always                         # auto-restarts on crash or reboot
     ports:
-      - "8085:80"
-    command: serve
+      - "8085:80"                           # 8085 host → 80 container (web UI and HTTP API)
+    command: serve                          # starts ntfy in server mode
     environment:
-      - TZ=${TZ:-America/New_York}
+      - TZ=${TZ:-America/New_York}          # timezone for notification timestamps — set TZ in .env
     volumes:
-      - ntfy-cache:/var/cache/ntfy
-      - ntfy-etc:/etc/ntfy
+      - ntfy-cache:/var/cache/ntfy          # persists notification cache (for delayed/offline delivery)
+      - ntfy-etc:/etc/ntfy                  # persists server.yml config (add auth rules, base URL, etc. here)
     networks:
-      - proxy
+      - proxy                               # must exist — created by npm compose (03-npm-setup.sh)
 
 volumes:
-  ntfy-cache:
-  ntfy-etc:
+  ntfy-cache:    # stores cached notifications for offline delivery
+  ntfy-etc:      # stores server.yml config — edit to add authentication, set base-url, enable attachments
 
 networks:
   proxy:
-    external: true
+    external: true    # must exist — created by npm compose (03-npm-setup.sh)

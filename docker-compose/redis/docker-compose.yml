@@ -1,38 +1,65 @@
+# =============================================================================
+# REDIS — In-memory key-value cache, message broker, and data store
+# =============================================================================
+# Port:        6379 (host) → Redis protocol (clients connect here to read/write)
+#              8082 (host) → Redis Commander web UI (browse keys, run commands)
+# Access:      redis://YOUR_SERVER_IP:6379  (requires password)
+#              http://YOUR_SERVER_IP:8082   (Redis Commander — visual browser)
+# Credentials: Redis password set by REDIS_PASSWORD env var — set in .env — CHANGE THIS
+#              Default fallback: "changeme" — do not use in production
+# Data:        redis-data volume → Redis AOF (append-only file) persistence
+# Depends on:  proxy network must exist (created by npm compose)
+# Start:       cd /srv/docker/redis && docker compose up -d
+# Stop:        cd /srv/docker/redis && docker compose down
+# Logs:        cd /srv/docker/redis && docker compose logs -f
+# Update:      cd /srv/docker/redis && docker compose pull && docker compose up -d
+# Note:        Redis is configured with:
+#              --appendonly yes               → AOF persistence (survives restarts)
+#              --maxmemory 256mb              → evicts keys when 256 MB is full
+#              --maxmemory-policy allkeys-lru → evicts least-recently-used keys first
+#              --requirepass                  → password required for all connections
+#              Set REDIS_PASSWORD=yourpassword in a .env file in this directory.
+# =============================================================================
+
 services:
   redis:
-    image: redis:7-alpine
+    image: redis:7-alpine                   # official lightweight Redis 7 image (Alpine Linux)
     container_name: redis
-    restart: always
+    restart: always                         # auto-restarts on crash or reboot
     ports:
-      - "6379:6379"
+      - "6379:6379"                         # 6379 host → 6379 container (Redis protocol)
     # Set REDIS_PASSWORD in your .env file
     command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru --requirepass ${REDIS_PASSWORD:-changeme}
+    # ↑ --appendonly yes             → write every change to disk (AOF) so data survives restarts
+    #   --maxmemory 256mb            → limit Redis to 256 MB of RAM
+    #   --maxmemory-policy allkeys-lru → when full, evict the least-recently-used keys
+    #   --requirepass                → requires password to connect — set REDIS_PASSWORD in .env — CHANGE THIS
     volumes:
-      - redis-data:/data
+      - redis-data:/data                    # persists Redis AOF file (data survives container restarts)
     networks:
-      - proxy
+      - proxy                               # must exist — created by npm compose (03-npm-setup.sh)
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "ping"]    # checks Redis is responding before marking healthy
       interval: 10s
       timeout: 5s
       retries: 3
 
   redis-commander:
-    image: rediscommander/redis-commander:latest
+    image: rediscommander/redis-commander:latest  # web UI for browsing Redis keys and running commands
     container_name: redis-commander
-    restart: always
+    restart: always                               # auto-restarts on crash or reboot
     ports:
-      - "8082:8081"
+      - "8082:8081"                               # 8082 host → 8081 container (Redis Commander web UI)
     environment:
-      - REDIS_HOSTS=local:redis:6379
+      - REDIS_HOSTS=local:redis:6379              # connects to the redis container on port 6379
     depends_on:
-      - redis
+      - redis                                     # waits for Redis to start before launching the UI
     networks:
-      - proxy
+      - proxy                                     # must exist — created by npm compose (03-npm-setup.sh)
 
 volumes:
-  redis-data:
+  redis-data:    # stores Redis AOF persistence file — data survives container restarts and reboots
 
 networks:
   proxy:
-    external: true
+    external: true    # must exist — created by npm compose (03-npm-setup.sh)

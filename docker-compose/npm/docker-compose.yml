@@ -1,23 +1,45 @@
+# =============================================================================
+# NGINX PROXY MANAGER (NPM) — Reverse proxy with SSL and GUI management
+# =============================================================================
+# Port:        80  (host) → HTTP traffic (proxied to services or redirected to HTTPS)
+#              443 (host) → HTTPS traffic (SSL-terminated, proxied to services)
+#              81  (host) → NPM admin UI (manage proxy hosts, SSL certs, access lists)
+# Access:      http://YOUR_SERVER_IP:81  (admin panel)
+# Credentials: Default: admin@example.com / changeme — CHANGE on first login
+# Data:        npm-data volume        → proxy host configs, access lists, users
+#              npm-letsencrypt volume → SSL/TLS certificates (Let's Encrypt)
+# Depends on:  Nothing — NPM is the foundation; it creates the "proxy" network
+# Start:       cd /srv/docker/npm && docker compose up -d
+# Stop:        cd /srv/docker/npm && docker compose down
+# Logs:        cd /srv/docker/npm && docker compose logs -f
+# Update:      cd /srv/docker/npm && docker compose pull && docker compose up -d
+# Note:        NPM must be started FIRST before any other service, because it creates
+#              the "proxy" Docker network that all other services connect to.
+#              After first login, change the default email and password immediately.
+#              To expose a service via domain name: add a Proxy Host in the admin UI,
+#              point it to the container name and internal port, then enable SSL.
+# =============================================================================
+
 services:
   npm:
-    image: jc21/nginx-proxy-manager:latest
+    image: jc21/nginx-proxy-manager:latest  # official Nginx Proxy Manager image
     container_name: npm
-    restart: always
+    restart: always                         # auto-restarts on crash or reboot
     ports:
-      - "80:80"
-      - "443:443"
-      - "81:81"
+      - "80:80"                             # 80 host → 80 container (HTTP — all web traffic comes in here)
+      - "443:443"                           # 443 host → 443 container (HTTPS — SSL-terminated traffic)
+      - "81:81"                             # 81 host → 81 container (NPM admin panel)
     volumes:
-      - npm-data:/data
-      - npm-letsencrypt:/etc/letsencrypt
+      - npm-data:/data                      # persists proxy host configs, users, access lists
+      - npm-letsencrypt:/etc/letsencrypt    # persists SSL certificates from Let's Encrypt
     networks:
-      - proxy
+      - proxy                               # THIS compose file creates the proxy network (see below)
 
 volumes:
-  npm-data:
-  npm-letsencrypt:
+  npm-data:           # stores all NPM configuration (proxy hosts, access lists, users)
+  npm-letsencrypt:    # stores Let's Encrypt SSL certificates and account keys
 
 networks:
   proxy:
-    name: proxy
-    driver: bridge
+    name: proxy       # explicit name so other compose files can reference it as "proxy"
+    driver: bridge    # standard bridge network — all containers on it can talk to each other

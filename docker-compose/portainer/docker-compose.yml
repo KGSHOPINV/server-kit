@@ -1,19 +1,37 @@
+# =============================================================================
+# PORTAINER — Visual Docker container manager with web UI
+# =============================================================================
+# Port:        9443 (host) → HTTPS web UI (manage containers, images, volumes, networks)
+# Access:      https://YOUR_SERVER_IP:9443  (self-signed cert — accept browser warning)
+# Credentials: Set on first visit — create admin password — CHANGE from any default
+# Data:        portainer-data volume → users, endpoints, stacks, settings
+# Depends on:  proxy network must exist (created by npm compose)
+# Start:       cd /srv/docker/portainer && docker compose up -d
+# Stop:        cd /srv/docker/portainer && docker compose down
+# Logs:        cd /srv/docker/portainer && docker compose logs -f
+# Update:      cd /srv/docker/portainer && docker compose pull && docker compose up -d
+# Note:        Portainer CE (Community Edition) is free and open source.
+#              It gives a GUI for everything docker commands do: start/stop/restart
+#              containers, view logs, inspect volumes, manage networks, deploy stacks.
+#              The Docker socket gives Portainer full control over all containers.
+# =============================================================================
+
 services:
   portainer:
-    image: portainer/portainer-ce:latest
+    image: portainer/portainer-ce:latest    # official Portainer Community Edition image
     container_name: portainer
-    restart: always
+    restart: always                         # auto-restarts on crash or reboot
     ports:
-      - "9443:9443"
+      - "9443:9443"                         # 9443 host → 9443 container (HTTPS web UI)
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - portainer-data:/data
+      - /var/run/docker.sock:/var/run/docker.sock  # gives Portainer full Docker daemon access
+      - portainer-data:/data                       # persists Portainer users, endpoints, stacks, and settings
     networks:
-      - proxy
+      - proxy                               # must exist — created by npm compose (03-npm-setup.sh)
 
 volumes:
-  portainer-data:
+  portainer-data:    # stores all Portainer configuration, users, and stack definitions
 
 networks:
   proxy:
-    external: true
+    external: true    # must exist — created by npm compose (03-npm-setup.sh)

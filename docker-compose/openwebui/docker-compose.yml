@@ -1,22 +1,41 @@
+# =============================================================================
+# OPEN WEBUI — Chat interface for Ollama (and OpenAI-compatible APIs)
+# =============================================================================
+# Port:        3004 (host) → web UI (chat with local AI models)
+# Access:      http://YOUR_SERVER_IP:3004
+# Credentials: Set on first visit — create admin account — CHANGE from defaults
+# Data:        openwebui-data volume → chat history, user settings, uploaded files
+# Depends on:  proxy network must exist (created by npm compose)
+#              Ollama must be running on host port 11434 (ollama compose)
+# Start:       cd /srv/docker/openwebui && docker compose up -d
+# Stop:        cd /srv/docker/openwebui && docker compose down
+# Logs:        cd /srv/docker/openwebui && docker compose logs -f
+# Update:      cd /srv/docker/openwebui && docker compose pull && docker compose up -d
+# Note:        Open WebUI talks to Ollama via host.docker.internal (the host machine's IP).
+#              This means Ollama runs on the host (not inside this container's network).
+#              You can also connect to OpenAI or other APIs in the Settings panel.
+# WARNING:     CPU-only inference via Ollama is very slow without a GPU.
+# =============================================================================
+
 services:
   open-webui:
-    image: ghcr.io/open-webui/open-webui:main
+    image: ghcr.io/open-webui/open-webui:main  # official Open WebUI image (GitHub Container Registry)
     container_name: openwebui
-    restart: always
+    restart: always                             # auto-restarts on crash or reboot
     ports:
-      - "3004:8080"
+      - "3004:8080"                             # 3004 host → 8080 container (web UI)
     environment:
-      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434  # connects to Ollama on the host machine at port 11434
     volumes:
-      - openwebui-data:/app/backend/data
+      - openwebui-data:/app/backend/data        # persists chat history, user accounts, uploaded files
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - "host.docker.internal:host-gateway"     # maps host.docker.internal to the host machine IP (Linux compatibility)
     networks:
-      - proxy
+      - proxy                                   # must exist — created by npm compose (03-npm-setup.sh)
 
 volumes:
-  openwebui-data:
+  openwebui-data:    # stores all chat history, user settings, and uploaded files
 
 networks:
   proxy:
-    external: true
+    external: true    # must exist — created by npm compose (03-npm-setup.sh)
